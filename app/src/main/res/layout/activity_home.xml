@@ -15,7 +15,7 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/idSpinner"
+        app:layout_constraintEnd_toStartOf="@+id/TSPIView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -26,15 +26,6 @@
             android:layout_height="match_parent" />
 
     </FrameLayout>
-
-    <Spinner
-        android:id="@+id/idSpinner"
-        android:layout_width="234dp"
-        android:layout_height="46dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="40dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/TSPIView"
