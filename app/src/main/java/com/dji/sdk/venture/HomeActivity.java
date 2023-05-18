@@ -42,7 +42,7 @@ import dji.sdk.flightcontroller.FlightController;
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener{
     Handler handler = new Handler();
     Runnable runnable;
-    int loadIntervals = 1000; //in ms. 1000ms = 1s
+    int loadIntervals = 100; //in ms. 1000ms = 1s
 
     private GoogleMap mMap;
     ArrayList<Drone> dronesToTrack = new ArrayList<>();

@@ -29,8 +29,9 @@ public class TSPIlogger extends Thread{
 
       Log.d("FlightControllerState", "connecting FlightController");
 
-      try{
+
       FlightController flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
+      try{
       flightController.setStateCallback(new FlightControllerState.Callback() {
          @Override
          public void onUpdate(@NonNull FlightControllerState djiFlightControllerCurrentState) {
