@@ -30,6 +30,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView tspidata;
     TSPI mTSPI;
     TSPIlogger mTSPIlogger;
+
+    private Marker droneMarker = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -86,26 +89,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //batteryView.setText(batteryResidual);
                 handler.postDelayed(runnable,loadIntervals);
-                mMap.clear();
-                //tspidata.setText(mTSPI.logResults());
-                LatLng position = new LatLng(mTSPI.getCurrentLatitude(),mTSPI.getCurrentLongitude());//TODO calibrate coordinates here when you get the data from the drone.
-                //new LatLng(lat,lon);
-                Log.d("mapMarker","adding " + position);
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(position);
-                markerOptions.draggable(false);
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
 
-                //below are rotations
-                //markerOptions.anchor(0.0f,0.0f);
-                //float angle = (float)mTSPI.getYaw();
-                //markerOptions.rotation(angle-20);
-                //rotation ends
-
-                mMap.addMarker(markerOptions);
-                //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-                Log.d("mapMarker",position +" added");
+                updateDroneLocation();
             }
         },loadIntervals);
         super.onResume();
@@ -176,7 +161,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         trackDronebtn.setVisibility(View.INVISIBLE);
     }
 
-    private void markCurrentLocation(LatLng point){
+    private void updateDroneLocation(){
 
+        LatLng pos = new LatLng(mTSPI.getCurrentLatitude(),mTSPI.getCurrentLongitude());
+
+        final MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(pos);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+
+        //below are rotations
+        //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
+        //markerOptions.anchor(0.0f,0.0f);
+        //float angle = (float)mTSPI.getYaw();
+        //markerOptions.rotation(angle);
+        //rotation ends
+
+        if (droneMarker != null) {
+            droneMarker.remove();
+        }
+
+        droneMarker = mMap.addMarker(markerOptions);
     }
 }
