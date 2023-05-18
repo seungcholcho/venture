@@ -70,6 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
         checkAndRequestPermissions();
+
     }
 
     private void checkAndRequestPermissions() {

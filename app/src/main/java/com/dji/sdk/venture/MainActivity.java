@@ -65,31 +65,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         1);
             }
         }
-        Spinner spinner = findViewById(R.id.idSpinner);
-        spinner.setOnItemSelectedListener(this);
-        String[] droneIDs = new String[dronesToTrack.size()];
-        for (int i = 0; i < dronesToTrack.size(); i++) {
-            droneIDs[i] = dronesToTrack.get(i).getId();
-        }
-        // Create the instance of ArrayAdapter
-        // having the list of courses
-        ArrayAdapter ad
-                = new ArrayAdapter(
-                this,
-                android.R.layout.simple_spinner_item,
-                droneIDs);
-
-        // set simple layout resource file
-        // for each item of spinner
-        ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Set the ArrayAdapter (ad) data on the
-        // Spinner which binds data to spinner
-        spinner.setAdapter(ad);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        tspidata = (TextView) findViewById(R.id.TSPIView);
+        //tspidata = (TextView) findViewById(R.id.TSPIView);
 
         mTSPI = new TSPI();
         mTSPIlogger = new TSPIlogger(mTSPI);
