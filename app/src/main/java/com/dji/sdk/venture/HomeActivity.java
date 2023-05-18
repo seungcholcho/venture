@@ -1,7 +1,6 @@
 package com.dji.sdk.venture;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 
 
@@ -31,13 +29,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
+
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.Date;
 
-import dji.sdk.flightcontroller.FlightController;
+
 
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener{
     Handler handler = new Handler();
@@ -97,6 +94,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTSPI = new TSPI();
         mTSPIlogger = new TSPIlogger(mTSPI);
         mTSPIlogger.start();
+
     }
 
     @Override
@@ -105,9 +103,11 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             //update location of our drone every loadIntervals seconds.
             @Override
             public void run() {
+
+                //batteryView.setText(batteryResidual);
                 handler.postDelayed(runnable,loadIntervals);
                 mMap.clear();
-                tspidata.setText(mTSPI.logResults());
+                //tspidata.setText(mTSPI.logResults());
                 LatLng position = new LatLng(mTSPI.getCurrentLatitude(),mTSPI.getCurrentLongitude());//TODO calibrate coordinates here when you get the data from the drone.
                 //new LatLng(lat,lon);
                 Log.d("mapMarker","adding " + position);

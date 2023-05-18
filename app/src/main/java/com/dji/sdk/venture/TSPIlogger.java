@@ -11,13 +11,14 @@ import java.util.Date;
 import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.common.model.LocationCoordinate2D;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 public class TSPIlogger extends Thread{
    TSPI mTSPI;
-
+   FlightController flightController;
    public TSPIlogger (TSPI mTSPI){
       this.mTSPI = mTSPI;
    }
@@ -29,28 +30,35 @@ public class TSPIlogger extends Thread{
 
       Log.d("FlightControllerState", "connecting FlightController");
 
-
-      FlightController flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-      try{
-      flightController.setStateCallback(new FlightControllerState.Callback() {
-         @Override
-         public void onUpdate(@NonNull FlightControllerState djiFlightControllerCurrentState) {
-            LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
-            Attitude attitude = djiFlightControllerCurrentState.getAttitude();
-            mTSPI.setTimestamp(Calendar.getInstance().getTime());
-            mTSPI.setGpsSignalStrength(String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel()));
-
-            mTSPI.setCurrentLatitude(locationCoordinate3D.getLatitude());
-            mTSPI.setCurrentLongitude(locationCoordinate3D.getLongitude());
-            mTSPI.setPitch(attitude.pitch);
-            mTSPI.setYaw(attitude.yaw);
-
-            Log.d("(Thread)TSPILogger", "hello from logger");
-         }
-      });
+      try {
+         flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
       } catch (Exception e) {
          Log.d("FlightControllerState","not Connected");
-         throw new RuntimeException(e);
+      }
+
+      if(flightController == null){
+         Log.d("FlightControllerState","not Connected");
+      } else {
+         flightController.setStateCallback(new FlightControllerState.Callback() {
+            @Override
+            public void onUpdate(@NonNull FlightControllerState djiFlightControllerCurrentState) {
+               LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
+               Attitude attitude = djiFlightControllerCurrentState.getAttitude();
+
+               mTSPI.setTimestamp(Calendar.getInstance().getTime());
+               mTSPI.setGpsSignalStrength(String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel()));
+
+               mTSPI.setCurrentLatitude(locationCoordinate3D.getLatitude());
+               mTSPI.setCurrentLongitude(locationCoordinate3D.getLongitude());
+
+               mTSPI.setCurrentAltitude(locationCoordinate3D.getAltitude());
+
+               mTSPI.setPitch(attitude.pitch);
+               mTSPI.setYaw(attitude.yaw);
+
+               Log.d("(Thread)TSPILogger", "hello from logger");
+            }
+         });
       }
    }
 }

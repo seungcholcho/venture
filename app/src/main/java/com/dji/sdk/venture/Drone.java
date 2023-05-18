@@ -5,10 +5,12 @@ import com.google.android.gms.maps.model.LatLng;
 public class Drone {
     private String id;
     private LatLng location;
+    private double altitude;
 
-    public Drone(String id, LatLng location) {
+    public Drone(String id, LatLng location, double altitude) {
         this.id = id;
         this.location = location;
+        this.altitude = altitude;
     }
 
     public String getId() {

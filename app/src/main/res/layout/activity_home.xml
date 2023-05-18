@@ -44,14 +44,5 @@
         tools:layout_editor_absoluteX="94dp"
         tools:layout_editor_absoluteY="104dp"></TextView>
 
-    <Button
-        android:id="@+id/btnRefresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="refresh"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/TSPIView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
