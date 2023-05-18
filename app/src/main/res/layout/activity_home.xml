@@ -11,6 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/mapFrame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,17 +22,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="battery residual"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="100dp"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/mapFrame" />
+
             <TextView
                 android:id="@+id/TimeView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="battery residual"
+                android:text="Time residual"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/mapFrame" />
+
+<!--            <Button-->
+<!--                android:id="@+id/location"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="location"/>-->
 
     </LinearLayout>
 
