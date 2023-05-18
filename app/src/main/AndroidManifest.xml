@@ -43,13 +43,13 @@
             android:value="dcfb7092dd064b776cd1e2e9"/>
 
         <activity
-            android:name="com.dji.sdk.venture.HomeActivity"
+            android:name="com.dji.sdk.venture.MainActivity"
             android:screenOrientation="landscape"
             android:exported="false">
         </activity>
 
         <activity
-            android:name="com.dji.sdk.venture.MainActivity"
+            android:name="com.dji.sdk.venture.RegisterActivity"
             android:screenOrientation="landscape"
             android:exported="true">
             <intent-filter>
