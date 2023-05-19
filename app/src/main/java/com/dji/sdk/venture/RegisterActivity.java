@@ -6,7 +6,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -16,7 +19,10 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +32,21 @@ import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 public class RegisterActivity extends AppCompatActivity {
     private static final String TAG = RegisterActivity.class.getName();
     public static final String  FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
+
     private static BaseProduct mProduct;
     private Handler mHandler; // TODO instantiate (example code in sample code)
 
     private Button mBtnOpen;
+    private TextView mTextConnectionStatus;
+    private TextView mTextProduct;
+
     private static final String[] REQUIRED_PERMISSION_LIST = new String[] {
             android.Manifest.permission.VIBRATE, // Gimbal rotation
             android.Manifest.permission.INTERNET, // API requests
@@ -56,12 +67,21 @@ public class RegisterActivity extends AppCompatActivity {
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
 
+    private void initUI(){
+
+        mBtnOpen = (Button) findViewById(R.id.btn_open);
+        mTextConnectionStatus = (TextView) findViewById(R.id.text_connection_status);
+        mTextProduct = (TextView) findViewById(R.id.text_product_info);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection);
 
-        mBtnOpen = (Button) findViewById(R.id.btn_open);
+        initUI();
+
         mBtnOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,9 +89,10 @@ public class RegisterActivity extends AppCompatActivity {
                 RegisterActivity.this.startActivity(intent);
             }
         });
-        checkAndRequestPermissions();
 
+        checkAndRequestPermissions();
     }
+
 
     private void checkAndRequestPermissions() {
         // Check for permissions
@@ -142,10 +163,16 @@ public class RegisterActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onProductConnect(BaseProduct baseProduct) {
-
                             Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
                             showToast("Product Connected:"+baseProduct);
                             notifyStatusChange();
+
+//                            Log.d("onProductConnect",String.valueOf(baseProduct));
+//                            Log.d("onProductConnect",String.valueOf(mProduct));
+
+                            //Update Text in Register Page
+                            refreshSDKRelativeUI();
+
                             // start home activity when product is connected
                             // UNCOMMENT IT ONLY IF THE DEVICE IS CONNECTED TO THE DRONE.
 
@@ -202,10 +229,45 @@ public class RegisterActivity extends AppCompatActivity {
         //mHandler.postDelayed(updateRunnable, 500);
     }
 
+
+    //Register 글자 변경
+    private void refreshSDKRelativeUI() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                BaseProduct mProduct = DJISDKManager.getInstance().getProduct();
+
+                //Log.d("refreshSDKRelativeUI",String.valueOf(mProduct));
+
+                if (null != mProduct && mProduct.isConnected()) {
+                    Log.v(TAG, "refreshSDK: True");
+
+                    String str = mProduct instanceof Aircraft ? "DJIAircraft" : "DJIHandHeld";
+                    mTextConnectionStatus.setText("Status: " + str + " connected");
+
+                    if (null != mProduct.getModel()) {
+                        mTextProduct.setText("" + mProduct.getModel().getDisplayName());
+                    } else {
+                        mTextProduct.setText(R.string.product_information);
+                    }
+
+                } else {
+                    Log.v(TAG, "refreshSDK: False");
+                    mBtnOpen.setEnabled(false);
+
+                    mTextProduct.setText(R.string.product_information);
+                    mTextConnectionStatus.setText(R.string.connection_loose);
+                }
+            }
+        });
+        //BaseProduct mProduct = MApplication.getProductInstance();
+
+    }
+
     private Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
-            //showToast("Hello");
             Intent intent = new Intent(FLAG_CONNECTION_CHANGE);
             sendBroadcast(intent);
         }
