@@ -103,9 +103,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
                 //batteryView.setText(batteryResidual);
+                //int loadIntervals = 100; //in ms. 1000ms = 1s
                 handler.postDelayed(runnable,loadIntervals);
-                Log.d("Hello from MAPP","I am running in background");
-                //updateDroneLocation();
+                //Log.d("Hello from MAPP","I am running in background");
+                updateDroneLocation();
             }
         },loadIntervals);
         super.onResume();
@@ -179,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        //권한허용
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
             if
@@ -193,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         //tspidata = (TextView) findViewById(R.id.TSPIView);
+
         initUI();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -202,9 +205,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTSPIlogger = new TSPIlogger(mTSPI);
         mTSPIlogger.start();
         //addListener();
-        mTSPI.getCurrentLatitude();
+        //mTSPI.getCurrentLatitude();
+
     }
 
+
+    //WayPointMission Function.
     private WaypointMissionOperatorListener eventNotificationListener = new WaypointMissionOperatorListener() {
         @Override
         public void onDownloadUpdate(WaypointMissionDownloadEvent downloadEvent) {

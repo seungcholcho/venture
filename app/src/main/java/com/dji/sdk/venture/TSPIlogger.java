@@ -42,21 +42,28 @@ public class TSPIlogger extends Thread{
          flightController.setStateCallback(new FlightControllerState.Callback() {
             @Override
             public void onUpdate(@NonNull FlightControllerState djiFlightControllerCurrentState) {
+               //getAircraftLocation 객체
                LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
+
+               //getAttitiude 객체
                Attitude attitude = djiFlightControllerCurrentState.getAttitude();
 
+               //현재 시간
                mTSPI.setTimestamp(Calendar.getInstance().getTime());
+               //GPS 신호 레벨
                mTSPI.setGpsSignalStrength(String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel()));
 
+               //getAircraftLocation에서 얻어오는 데이터
                mTSPI.setCurrentLatitude(locationCoordinate3D.getLatitude());
                mTSPI.setCurrentLongitude(locationCoordinate3D.getLongitude());
 
+               //getAttitude에서 얻어오는 데이데
                mTSPI.setCurrentAltitude(locationCoordinate3D.getAltitude());
 
                mTSPI.setPitch(attitude.pitch);
                mTSPI.setYaw(attitude.yaw);
 
-               Log.d("(Thread)TSPILogger", "hello from logger");
+               //Log.d("(Thread)TSPILogger", "hello from logger");
             }
          });
       }
