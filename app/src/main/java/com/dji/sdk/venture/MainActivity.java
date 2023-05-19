@@ -104,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void run() {
                 //batteryView.setText(batteryResidual);
                 handler.postDelayed(runnable,loadIntervals);
-                updateDroneLocation();
+                Log.d("Hello from MAPP","I am running in background");
+                //updateDroneLocation();
             }
         },loadIntervals);
         super.onResume();
@@ -137,16 +138,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             }
             case R.id.clear:{
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mMap.clear();
-                    }
-
-                });
+                mMap.clear();
                 waypointList.clear();
+                Log.d("Crash","errorfromClearButton");
                 waypointMissionBuilder.waypointList(waypointList);
-                updateDroneLocation();
+                Log.d("Crash","errorfromClearButton2");
                 break;
             }
             case R.id.config:{
@@ -205,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTSPI = new TSPI();
         mTSPIlogger = new TSPIlogger(mTSPI);
         mTSPIlogger.start();
-
         //addListener();
+        mTSPI.getCurrentLatitude();
     }
 
     private WaypointMissionOperatorListener eventNotificationListener = new WaypointMissionOperatorListener() {
@@ -232,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void onExecutionFinish(@Nullable final DJIError error) {
-            //setResultToToast("Execution finished: " + (error == null ? "Success!" : error.getDescription()));
+            setResultToToast("Execution finished: " + (error == null ? "Success!" : error.getDescription()));
         }
     };
 
@@ -250,7 +246,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng point) {
+        setResultToToast("touching map");
         if (isAdd == true){
+            setResultToToast("adding waypoint");
             markWaypoint(point);
             Waypoint mWaypoint = new Waypoint(point.latitude, point.longitude, altitude);
             //Add Waypoints to Waypoint arraylist;
@@ -264,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
             }
         }else{
-            //setResultToToast("Cannot Add Waypoint");
+            setResultToToast("Cannot Add Waypoint");
         }
     }
     private void markWaypoint(LatLng point){
