@@ -6,7 +6,8 @@ public class TSPI {
     StringBuffer loggedTSPI;
     private Date timestamp;
     private String gpsSignalStrength;
-    private int satelliteCount;
+
+    private int maxHeight;
 
     private double homepointLatitude;
     private double homepointLongitude;
@@ -15,8 +16,6 @@ public class TSPI {
     private double currentLatitude;
     private double currentLongitude;
     private double currentAltitude;
-
-    private double sealevelAltitude;
 
     private double pitch;
     private double yaw;

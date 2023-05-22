@@ -8,10 +8,12 @@ import androidx.annotation.NonNull;
 import java.util.Calendar;
 import java.util.Date;
 
+import dji.common.error.DJIError;
 import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.model.LocationCoordinate2D;
+import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -19,22 +21,19 @@ import dji.sdk.sdkmanager.DJISDKManager;
 public class TSPIlogger extends Thread{
    TSPI mTSPI;
    FlightController flightController;
-   public TSPIlogger (TSPI mTSPI){
+
+   public TSPIlogger (TSPI mTSPI, FlightController mflightController){
       this.mTSPI = mTSPI;
+      this.flightController = mflightController;
    }
 
    public void run(){
       initFlightControllerState();
    }
+
    private void initFlightControllerState(){
 
       Log.d("FlightControllerState", "connecting FlightController");
-
-      try {
-         flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-      } catch (Exception e) {
-         Log.d("FlightControllerState","not Connected");
-      }
 
       if(flightController == null){
          Log.d("FlightControllerState","not Connected");
@@ -67,5 +66,21 @@ public class TSPIlogger extends Thread{
             }
          });
       }
+   }
+
+   private void setMaxHeight(){
+      flightController.setMaxFlightHeight(100,new CommonCallbacks.CompletionCallback() {
+         @Override
+         public void onResult(DJIError djiError) {
+         }
+      });
+   }
+
+   private void setMaxRadius(){
+      flightController.setMaxFlightRadius(1000,new CommonCallbacks.CompletionCallback() {
+         @Override
+         public void onResult(DJIError djiError) {
+         }
+      });
    }
 }
