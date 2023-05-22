@@ -1,29 +1,21 @@
 package com.dji.sdk.venture;
 
-import static org.greenrobot.eventbus.EventBus.TAG;
-
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -50,19 +42,14 @@ import dji.common.mission.followme.FollowMeHeading;
 import dji.common.mission.followme.FollowMeMission;
 import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointMission;
-import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
-import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
-import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
 import dji.common.mission.waypoint.WaypointMissionHeadingMode;
-import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.followme.FollowMeMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
-import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -76,8 +63,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     TSPI mTSPI;
 
-    TSPIlogger mTSPIlogger;
-    //TextView tspidata;
+    BackgroundCallback mTSPIlogger;
 
     private GoogleMap mMap;
     private Button mBtnInit, mBtnStart, mBtnStop;
@@ -132,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         try {
             flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-            mTSPIlogger = new TSPIlogger(mTSPI, flightController);
+            mTSPIlogger = new BackgroundCallback(mTSPI, flightController);
             mTSPIlogger.start();
 
             flightController.setMaxFlightHeight(100,new CommonCallbacks.CompletionCallback() {
@@ -156,8 +142,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         //현재위치 초기화
-        currentLatitude = mTSPI.getCurrentLatitude();
-        currentLongitude = mTSPI.getCurrentLongitude();
+        currentLatitude = mTSPI.getLatitude();
+        currentLongitude = mTSPI.getLongitude();
     }
 
     @Override
@@ -186,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
 
-                        currentLocation = "Lat : " + String.valueOf(mTSPI.getCurrentLatitude()) + "/nLon : " + String.valueOf(mTSPI.getCurrentLongitude());
+                        currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "Lon : " + String.valueOf(mTSPI.getLongitude());
                         mTextCLocation.setText(currentLocation);
 
                         //Distance target to Current value
@@ -223,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.start:{
                 Log.d("onClick","start");
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
-                        currentLatitude + 5 * ONE_METER_OFFSET, currentLongitude + 5 * ONE_METER_OFFSET, 30f
+                        currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
                 ), new CommonCallbacks.CompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
@@ -233,8 +219,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void run() {
                                 int cnt = 0;
                                 while(cnt < 100) {
-                                    currentLatitude = currentLatitude + 5 * ONE_METER_OFFSET;
-                                    currentLongitude = currentLongitude + 5 * ONE_METER_OFFSET;
+                                    currentLatitude = currentLatitude + 1 * ONE_METER_OFFSET;
+                                    currentLongitude = currentLongitude;
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(currentLatitude, currentLongitude);
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
                                         try {
@@ -327,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateDroneLocation(){
 
-        LatLng pos = new LatLng(mTSPI.getCurrentLatitude(),mTSPI.getCurrentLongitude());
+        LatLng pos = new LatLng(mTSPI.getLatitude(),mTSPI.getLongitude());
 
         final MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(pos);
