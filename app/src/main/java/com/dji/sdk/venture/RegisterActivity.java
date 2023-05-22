@@ -38,7 +38,7 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 public class RegisterActivity extends AppCompatActivity {
     private static final String TAG = RegisterActivity.class.getName();
-    public static final String  FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
+    public static final String FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
 
     private static BaseProduct mProduct;
     private Handler mHandler; // TODO instantiate (example code in sample code)
@@ -47,7 +47,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView mTextConnectionStatus;
     private TextView mTextProduct;
 
-    private static final String[] REQUIRED_PERMISSION_LIST = new String[] {
+    private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             android.Manifest.permission.VIBRATE, // Gimbal rotation
             android.Manifest.permission.INTERNET, // API requests
             android.Manifest.permission.ACCESS_WIFI_STATE, // WIFI connected products
@@ -67,7 +67,7 @@ public class RegisterActivity extends AppCompatActivity {
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
 
-    private void initUI(){
+    private void initUI() {
 
         mBtnOpen = (Button) findViewById(R.id.btn_open);
         mTextConnectionStatus = (TextView) findViewById(R.id.text_connection_status);
@@ -132,12 +132,13 @@ public class RegisterActivity extends AppCompatActivity {
             showToast("Missing permissions!!!");
         }
     }
+
     private void startSDKRegistration() {
         if (isRegistrationInProgress.compareAndSet(false, true)) {
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d("register","registering started");
+                    Log.d("register", "registering started");
                     showToast("registering, pls wait...");
                     DJISDKManager.getInstance().registerApp(RegisterActivity.this.getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
 
@@ -161,10 +162,11 @@ public class RegisterActivity extends AppCompatActivity {
                             showToast("Product Disconnected");
                             notifyStatusChange();
                         }
+
                         @Override
                         public void onProductConnect(BaseProduct baseProduct) {
                             Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
-                            showToast("Product Connected:"+baseProduct);
+                            showToast("Product Connected:" + baseProduct);
                             notifyStatusChange();
 
 //                            Log.d("onProductConnect",String.valueOf(baseProduct));
@@ -209,6 +211,7 @@ public class RegisterActivity extends AppCompatActivity {
                                             newComponent));
 
                         }
+
                         @Override
                         public void onInitProcess(DJISDKInitEvent djisdkInitEvent, int i) {
                             //showToast("hello from init status");
@@ -223,6 +226,7 @@ public class RegisterActivity extends AppCompatActivity {
             });
         }
     }
+
     private void notifyStatusChange() {
         //showToast("hello from notify status");
         //mHandler.removeCallbacks(updateRunnable);
@@ -261,8 +265,6 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
         });
-        //BaseProduct mProduct = MApplication.getProductInstance();
-
     }
 
     private Runnable updateRunnable = new Runnable() {

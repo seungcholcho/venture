@@ -7,6 +7,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -67,27 +68,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Button mBtnInit, mBtnStart, mBtnStop;
-    private TextView mTextTLocation;
-    private TextView mTextCLocation;
+    private TextView mTextTLocation,mTextCLocation;
 
     private String currentLocation;
+    private String targetLocation;
+
 
     private double currentLatitude = 0;
     private double currentLongitude = 0;
 
-    private static final double ONE_METER_OFFSET = 0.00000899322;
+    private double targetLatitude = 0;
+    private double targetLongitude = 0;
+
+    private static final double ONE_METER_OFFSET = 0.000009005520;
+
+    //0.00000899322;
+
+    private static final double ONE_METER_OFFSET_LON = 0.00000899322;
+
 
     private Marker droneMarker = null;
-    private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
-    private List<Waypoint> waypointList = new ArrayList<>();
-
-    public static WaypointMission.Builder waypointMissionBuilder;
-    private WaypointMissionOperator instance;
-    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
-    private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
-
-    private float altitude = 100.0f;
-    private float mSpeed = 10.0f;
 
     private FollowMeMissionOperator followMeMissionOperator = null;
 
@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         //권한허용
@@ -133,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
 
-
             //followMeMissionOpertor 객체 주입
             followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
 
@@ -160,9 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
 
-                //int loadIntervals = 100; //in ms. 1000ms = 1s
                 handler.postDelayed(runnable,loadIntervals);
-                //Log.d("Hello from MAPP","I am running in background");
 
                 //Mark on map in real time
                 updateDroneLocation();
@@ -172,8 +170,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
 
-                        currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "Lon : " + String.valueOf(mTSPI.getLongitude());
+                        currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "  Lon : " + String.valueOf(mTSPI.getLongitude());
                         mTextCLocation.setText(currentLocation);
+
+                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "  Lon : " + String.valueOf(targetLongitude);
+                        mTextTLocation.setText(targetLocation);
 
                         //Distance target to Current value
                     }
@@ -199,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBtnStop.setOnClickListener(this);
 
     }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -208,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case R.id.start:{
                 Log.d("onClick","start");
+                showToast("Mission Start");
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
                 ), new CommonCallbacks.CompletionCallback() {
@@ -218,12 +221,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void run() {
                                 int cnt = 0;
-                                while(cnt < 100) {
-                                    currentLatitude = currentLatitude + 1 * ONE_METER_OFFSET;
-                                    currentLongitude = currentLongitude;
-                                    LocationCoordinate2D newLocation = new LocationCoordinate2D(currentLatitude, currentLongitude);
+                                while(cnt < 50) {
+                                    targetLatitude = currentLatitude + 1 * ONE_METER_OFFSET;
+                                    targetLongitude = currentLongitude;
+                                    LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
+
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
                                         try {
+                                            //Thread sleep 1/1000
                                             Thread.sleep(1500);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
@@ -231,15 +236,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     });
                                     cnt++;
                                 }
+                                Log.d("MissionStart" , "Mission Success");
+                                showToast("Mission Success");
+
                             }
                         }).start();
                     }
                 });
-
                 break;
             }
             case R.id.stop:{
                 Log.d("onClick","stop");
+                //followMeMissionOperator.stopMission(djiError -> ToastUtils.setResultToToast(djiError != null ? "" : djiError.getDescription()));
                 break;
             }
             default:
@@ -254,9 +262,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
-
-
 
     @Override
     public void onMapClick(LatLng point) {
@@ -300,15 +305,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance,  listener);
     }
 
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
     }
-
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-
     }
 
     private void updateDroneLocation(){
@@ -332,6 +333,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         droneMarker = mMap.addMarker(markerOptions);
     }
+
+    private void showToast(final String toastMsg) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), toastMsg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 
 
 

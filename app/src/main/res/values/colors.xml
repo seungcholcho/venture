@@ -14,4 +14,6 @@
     <color name="colorAccent">#FF4081</color>
     <color name="button_normal">#50808080</color>
     <color name="button_press">#5086BFFF</color>
+    <color name="red">#ff0000</color>
+    <color name="blue">#0067a3</color>
 </resources>
