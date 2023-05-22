@@ -128,9 +128,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        mTSPI = new TSPI();
+
         try {
             flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-            mTSPI = new TSPI();
             mTSPIlogger = new TSPIlogger(mTSPI, flightController);
             mTSPIlogger.start();
 
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         currentLocation = "Lat : " + String.valueOf(mTSPI.getCurrentLatitude()) + "/nLon : " + String.valueOf(mTSPI.getCurrentLongitude());
                         mTextCLocation.setText(currentLocation);
 
