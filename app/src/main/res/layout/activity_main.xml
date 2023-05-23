@@ -76,22 +76,22 @@
 
         <TextView
             android:id="@+id/text_current_location"
-            android:layout_width="wrap_content"
+            android:layout_width="244dp"
             android:layout_height="wrap_content"
             android:text="text_current_location"
-            android:textSize="18dp"
             android:textColor="@color/red"
+            android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/text_target_location"
-            android:layout_width="wrap_content"
+            android:layout_width="283dp"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
-            android:textColor="@color/blue"
             android:padding="10dp"
             android:text="text_target_location"
+            android:textColor="@color/blue"
+            android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
