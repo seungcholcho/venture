@@ -142,8 +142,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLatitude = mTSPI.getLatitude();
         currentLongitude = mTSPI.getLongitude();
 
-        targetLatitude = 0.0;
-        targetLongitude = 0.0;
+        targetLatitude = mTSPI.getLatitude();
+        targetLongitude = mTSPI.getLongitude();
+
+//        targetLatitude = 0.0;
+//        targetLongitude = 0.0;
 
         final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -232,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onResult(DJIError djiError) {
                         Log.d("MissionStart", "Mission Start");
+                        //ToDo Thread 객체화 하기(OnPause, Stop.onClickListener Thread.interrupt 넣기)
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -354,8 +358,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         markerOptions2.position(tarPosition);
         markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-        pathPoints.set(0, curPosition);
-        pathPoints.set(1, tarPosition);
+        //drawLine
+//        pathPoints.set(0, curPosition);
+//        pathPoints.set(1, tarPosition);
 
         //below are rotations
         //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
@@ -371,22 +376,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             droneMarker.remove();
         }
 
-        drawPolyline();
+        //drawPolyline();
 
         droneMarker = mMap.addMarker(markerOptions);
         droneMarker = mMap.addMarker(markerOptions2);
     }
 
+
+    private void selectColor(MarkerOptions markerOptions, String color){
+
+        switch (color) {
+            case "red":
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                break;
+            case "green":
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                break;
+            default:
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                break;
+        }
+    }
+
     private void drawPolyline(){
 
         PolylineOptions polylineOptions = new PolylineOptions();
-
         polylineOptions.color(Color.RED);
-
         polylineOptions.width(5);
-
         polylineOptions.addAll(pathPoints);
-
         mMap.addPolyline(polylineOptions);
 
     }

@@ -79,7 +79,7 @@
             android:layout_width="244dp"
             android:layout_height="wrap_content"
             android:text="text_current_location"
-            android:textColor="@color/red"
+            android:textColor="@color/green"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -90,7 +90,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="text_target_location"
-            android:textColor="@color/blue"
+            android:textColor="@color/red"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
