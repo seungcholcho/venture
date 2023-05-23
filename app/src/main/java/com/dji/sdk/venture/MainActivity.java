@@ -1,7 +1,9 @@
 package com.dji.sdk.venture;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -32,6 +34,10 @@ import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import dji.common.error.DJIError;
 import dji.common.mission.followme.FollowMeHeading;
@@ -78,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker droneMarker = null;
 
     private FollowMeMissionOperator followMeMissionOperator = null;
+
+    List<LatLng> pathPoints = new ArrayList<>();
+
+    private LatLng initLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -132,8 +142,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLatitude = mTSPI.getLatitude();
         currentLongitude = mTSPI.getLongitude();
 
-        targetLatitude = mTSPI.getLatitude();
-        targetLongitude = mTSPI.getLongitude();
+        targetLatitude = 0.0;
+        targetLongitude = 0.0;
+
+        final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        initLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
+        pathPoints.add(initLocation);
+        pathPoints.add(initLocation);
     }
 
     @Override
@@ -203,6 +222,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.start:{
                 Log.d("onClick","start");
                 showToast("Mission Start");
+
+                targetLatitude = mTSPI.getLatitude();
+                targetLongitude = mTSPI.getLongitude();
+
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
                 ), new CommonCallbacks.CompletionCallback() {
@@ -214,9 +237,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void run() {
                                 int cnt = 0;
                                 while(cnt < 50) {
-                                    targetLatitude = targetLatitude + 500 * ONE_METER_OFFSET;
+                                    targetLatitude = targetLatitude + 10 * ONE_METER_OFFSET;
 
-                                    targetLongitude = targetLongitude;
+                                    targetLongitude = targetLongitude * 1;
 
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
 
@@ -267,6 +290,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap)  {
         Log.d("Map", "Map ready.");
         mMap = googleMap;
+
+        LatLng initLocation = new LatLng(0.0,0.0);
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
             if
@@ -277,7 +303,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         1);
             }
         }
+
         mMap.setMyLocationEnabled(true);
+
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         long minTime = 1000; //millisecond
@@ -286,22 +314,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // this location listener is to the device this application is running on only
         // to follow a different device, we will need a check box or radio button of some sort to
         // either pick to follow the good drone or enemy drone
+
+        // 현재 위치 표시
         LocationListener listener = new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
                 Double latitude = location.getLatitude();
                 Double longitude = location.getLongitude();
                 LatLng curPoint = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint,16));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint,18));
                 locationManager.removeUpdates(this);
             }
         };
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance,  listener);
+
+
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
     }
+
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
@@ -320,6 +354,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         markerOptions2.position(tarPosition);
         markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
+        pathPoints.set(0, curPosition);
+        pathPoints.set(1, tarPosition);
+
         //below are rotations
         //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
         //markerOptions.anchor(0.0f,0.0f);
@@ -327,15 +364,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //markerOptions.rotation(angle);
         //rotation ends
 
-        //LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
+        LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
 
 
         if (droneMarker != null) {
             droneMarker.remove();
         }
 
+        drawPolyline();
+
         droneMarker = mMap.addMarker(markerOptions);
         droneMarker = mMap.addMarker(markerOptions2);
+    }
+
+    private void drawPolyline(){
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+
+        polylineOptions.color(Color.RED);
+
+        polylineOptions.width(5);
+
+        polylineOptions.addAll(pathPoints);
+
+        mMap.addPolyline(polylineOptions);
+
     }
 
     private void showToast(final String toastMsg) {
