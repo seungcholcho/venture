@@ -1,7 +1,6 @@
 package com.dji.sdk.venture;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String currentLocation;
     private String targetLocation;
-    private String flightStatus;
+    private String flightStates;
 
     private double currentLatitude = 0;
     private double currentLongitude = 0;
@@ -159,10 +158,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //folloMeMission Listener 활성화
             setUpListener();
-
-            //Mission 활성화 상태 출력
-            flightStatus = followMeMissionOperator.getCurrentState().getName();
-            mTextDistance.setText(flightStatus);
+            
+            //flight 상태 + Mission 상태 출력
+            flightStates = "Flight state : " + mTSPI.getFlightState().name() +"\nMission state : "+ followMeMissionOperator.getCurrentState().getName();
+            mTextDistance.setText(flightStates);
 
         } catch (Exception e) {
             Log.d("FlightControllerState", "not Connected");
@@ -214,10 +213,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
                         mTextTLocation.setText(targetLocation);
 
-                        flightStatus = "Currnet FollowMeMission State : " + followMeMissionOperator.getCurrentState().getName();
-                        mTextDistance.setText(flightStatus);
+                        flightStates = "Currnet FollowMeMission State : " + followMeMissionOperator.getCurrentState().getName();
+                        mTextDistance.setText(flightStates);
 
                         //Distance target to Current value
+                        flightStates = "Flight state : " + mTSPI.getFlightState().name() +"\nMission state : "+ followMeMissionOperator.getCurrentState().getName();
+                        mTextDistance.setText(flightStates);
                     }
                 });
             }

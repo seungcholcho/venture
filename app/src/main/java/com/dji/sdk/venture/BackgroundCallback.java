@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import dji.common.flightcontroller.FlightControllerState;
+import dji.common.flightcontroller.FlightMode;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.sdk.flightcontroller.FlightController;
 
@@ -20,6 +21,7 @@ public class BackgroundCallback extends Thread {
    private double Altitude;
    private double Latitude;
    private double Longitude;
+   protected FlightMode flightState = null;
 
     public BackgroundCallback(TSPI mTSPI, FlightController mflightController) {
         this.mTSPI = mTSPI;
@@ -46,8 +48,9 @@ public class BackgroundCallback extends Thread {
                     Altitude = locationCoordinate3D.getAltitude();
                     Latitude = locationCoordinate3D.getLatitude();
                     Longitude = locationCoordinate3D.getLongitude();
+                    flightState = djiFlightControllerCurrentState.getFlightMode();
 
-                    mTSPI.updateTSPI(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude);
+                    mTSPI.updateTSPI(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,flightState);
                 }
             });
         }
