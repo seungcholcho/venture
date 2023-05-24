@@ -1,5 +1,7 @@
 package com.dji.sdk.venture;
 
+import static dji.log.GlobalConfig.TAG;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -34,8 +36,13 @@ import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.android.gms.maps.model.PolylineOptions;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -170,6 +177,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //현재위치 초기화
         currentLatitude = mTSPI.getLatitude();
         currentLongitude = mTSPI.getLongitude();
+
+        //database collection get
+
+
         targetLatitude = mTSPI.getLatitude();
         targetLongitude = mTSPI.getLongitude();
 
@@ -178,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //        pathPoints.add(initLocation);
 //        pathPoints.add(initLocation);
+
     }
 
     @Override
@@ -186,8 +198,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     protected void onResume() {
-
         super.onResume();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("mal_test1").orderBy("Time", Query.Direction.DESCENDING).get()
+                //.whereEqualTo("Time", true).whereEqualTo("GpsSignal", true)
+                //                .whereEqualTo("Latitude", true).whereEqualTo("Longitude", true)
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+
 
         Log.d("onResume", "onResume Start");
 
@@ -195,9 +224,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //update location of our drone every loadIntervals seconds.
             @Override
             public void run() {
-
                 handler.postDelayed(runnable,loadIntervals);
-
                 //Mark on map in real time
                 updateDroneLocation();
 

@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "984863825450",
+    "firebase_url": "https://dji-test2-default-rtdb.firebaseio.com",
+    "project_id": "dji-test2",
+    "storage_bucket": "dji-test2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984863825450:android:3aa162eacf36aeab89ad53",
+        "android_client_info": {
+          "package_name": "com.dji.sdk.maldronesim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984863825450-3p173m5j65g12u12bhoufv9luluvf418.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYZgEjvg2hJZqLprWX822kF7-tegbhrRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984863825450-3p173m5j65g12u12bhoufv9luluvf418.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984863825450:android:88f2d10e8b1a044489ad53",
+        "android_client_info": {
+          "package_name": "com.dji.sdk.venture"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984863825450-3p173m5j65g12u12bhoufv9luluvf418.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYZgEjvg2hJZqLprWX822kF7-tegbhrRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984863825450-3p173m5j65g12u12bhoufv9luluvf418.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
