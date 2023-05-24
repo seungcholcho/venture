@@ -166,21 +166,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-//        db.collection("mal_test1") // 조건 넣어서 한 번에 여러 문서 가져오는 코드
-//                .whereEqualTo("Time", true)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            for (QueryDocumentSnapshot document : task.getResult()) {
-//                                Log.d(TAG, document.getId() + " => " + document.getData());
-//                            }
-//                        } else {
-//                            Log.d(TAG, "Error getting documents: ", task.getException());
-//                        }
-//                    }
-//                });
         db.collection("mal_test1").orderBy("Time", Query.Direction.DESCENDING).get()
                 //.whereEqualTo("Time", true).whereEqualTo("GpsSignal", true)
                 //                .whereEqualTo("Latitude", true).whereEqualTo("Longitude", true)
@@ -195,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
-                }); //.orderBy("Time", Direction.DESCENDING) -> 시간 내림차순
+                });
 
 
         handler.postDelayed(runnable = new Runnable() {
