@@ -209,13 +209,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
 
-        db.collection("mal_test1").orderBy("Time", Query.Direction.DESCENDING).get()
+        db.collection("05241600_mal").orderBy("Time", Query.Direction.DESCENDING).get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                //showToast(String.valueOf(document.getData()));
+
+                                showToast(String.valueOf(document.getData()));
 
                                 //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
                                 //Date Timestamp = changeUnixTime(Time);
@@ -224,11 +225,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 double Latitude = (double) document.getData().get("Latitude");
                                 double Longitude = (double) document.getData().get("Longitude");
 
-//                                Log.d("Firebase","Time : "+document.getData().get("Time").getClass().getName());
-//                                Log.d("Firebase","GpsSignal : "+document.getData().get("GpsSignal").getClass().getName());
-//                                Log.d("Firebase","Altitude : "+document.getData().get("Altitude").getClass().getName());
-//                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
-//                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
+                                Log.d("Firebase","Time : "+document.getData().get("Time").getClass().getName());
+                                Log.d("Firebase","GpsSignal : "+document.getData().get("GpsSignal").getClass().getName());
+                                Log.d("Firebase","Altitude : "+document.getData().get("Altitude").getClass().getName());
+                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
+                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
 
                                 maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
                             }
@@ -422,11 +423,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
         //malicious Marker
-//        LatLng tarPosition = new LatLng(maliciousTSPI.getLatitude(),maliciousTSPI.getLongitude());
-//
-//        final MarkerOptions markerOptions2 = new MarkerOptions();
-//        markerOptions2.position(tarPosition);
-//        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+        LatLng tarPosition = new LatLng(maliciousTSPI.getLatitude(),maliciousTSPI.getLongitude());
+
+        final MarkerOptions markerOptions2 = new MarkerOptions();
+        markerOptions2.position(tarPosition);
+        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
 
 
         //drawLine
@@ -450,7 +451,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //drawPolyline();
 
         droneMarker = mMap.addMarker(markerOptions);
-        //droneMarker = mMap.addMarker(markerOptions2);
+        droneMarker = mMap.addMarker(markerOptions2);
     }
 
     private void setUpListener() {
