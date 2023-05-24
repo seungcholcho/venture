@@ -50,7 +50,7 @@ public class BackgroundCallback extends Thread {
                     Longitude = locationCoordinate3D.getLongitude();
                     flightState = djiFlightControllerCurrentState.getFlightMode();
 
-                    mTSPI.updateTSPI(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,flightState);
+                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,flightState);
                 }
             });
         }
