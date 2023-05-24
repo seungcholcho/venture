@@ -4,6 +4,7 @@ import static dji.log.GlobalConfig.TAG;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -40,25 +42,22 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.android.gms.maps.model.PolylineOptions;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import dji.common.error.DJIError;
 import dji.common.mission.followme.FollowMeHeading;
 import dji.common.mission.followme.FollowMeMission;
-import dji.common.mission.waypoint.Waypoint;
-import dji.common.mission.waypoint.WaypointMission;
-import dji.common.mission.waypoint.WaypointMissionFinishedAction;
-import dji.common.mission.waypoint.WaypointMissionHeadingMode;
+import dji.common.mission.followme.FollowMeMissionEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.followme.FollowMeMissionOperator;
-import dji.sdk.mission.waypoint.WaypointMissionOperator;
+import dji.sdk.mission.followme.FollowMeMissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -72,15 +71,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     TSPI mTSPI;
 
-    BackgroundCallback mTSPIlogger;
+    BackgroundCallback updateTSPI;
 
     private GoogleMap mMap;
     private Button mBtnInit, mBtnStart, mBtnStop;
-    private TextView mTextTLocation,mTextCLocation;
+    private TextView mTextTLocation,mTextCLocation, mTextDistance;
 
     private String currentLocation;
     private String targetLocation;
-
+    private String flightStates;
 
     private double currentLatitude = 0;
     private double currentLongitude = 0;
@@ -89,21 +88,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double targetLongitude = 0;
 
     private static final double ONE_METER_OFFSET = 0.000009005520;
-
     //0.00000899322;
 
     private static final double ONE_METER_OFFSET_LON = 0.00000899322;
-
 
     private Marker droneMarker = null;
 
     private FollowMeMissionOperator followMeMissionOperator = null;
 
+    private FollowMeMissionOperatorListener listener;
+
+    List<LatLng> pathPoints = new ArrayList<>();
+
+    private LatLng initLocation;
+
+    private void initUI() {
+
+        mBtnInit = (Button) findViewById(R.id.init);
+        mBtnStart = (Button) findViewById(R.id.start);
+        mBtnStop = (Button) findViewById(R.id.stop);
+        mTextCLocation = (TextView)findViewById(R.id.text_current_location);
+        mTextTLocation = (TextView)findViewById(R.id.text_target_location);
+        mTextDistance = (TextView)findViewById(R.id.text_distance);
+
+        mBtnInit.setOnClickListener(this);
+        mBtnStart.setOnClickListener(this);
+        mBtnStop.setOnClickListener(this);
+
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         //권한허용
@@ -127,15 +143,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         try {
             flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-            mTSPIlogger = new BackgroundCallback(mTSPI, flightController);
-            mTSPIlogger.start();
+            updateTSPI = new BackgroundCallback(mTSPI, flightController);
+            updateTSPI.start();
 
+            //최대 고도 제한
             flightController.setMaxFlightHeight(100,new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
                 }
             });
 
+            //최대 반경 제한
             flightController.setMaxFlightRadius(1000,new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
@@ -144,6 +162,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //followMeMissionOpertor 객체 주입
             followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
+
+            //folloMeMission Listener 활성화
+            setUpListener();
+            
+            //flight 상태 + Mission 상태 출력
+            flightStates = "Flight state : " + mTSPI.getFlightState().name() +"\nMission state : "+ followMeMissionOperator.getCurrentState().getName();
+            mTextDistance.setText(flightStates);
 
         } catch (Exception e) {
             Log.d("FlightControllerState", "not Connected");
@@ -154,6 +179,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLongitude = mTSPI.getLongitude();
 
         //database collection get
+
+
+        targetLatitude = mTSPI.getLatitude();
+        targetLongitude = mTSPI.getLongitude();
+
+        //pathPoint값 초기화
+//        initLocation = new LatLng(currentLatitude, currentLongitude);
+//
+//        pathPoints.add(initLocation);
+//        pathPoints.add(initLocation);
 
     }
 
@@ -183,6 +218,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
 
 
+        Log.d("onResume", "onResume Start");
+
         handler.postDelayed(runnable = new Runnable() {
             //update location of our drone every loadIntervals seconds.
             @Override
@@ -196,13 +233,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
 
-                        currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "  Lon : " + String.valueOf(mTSPI.getLongitude());
+                        currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "\nLon : " + String.valueOf(mTSPI.getLongitude());
                         mTextCLocation.setText(currentLocation);
 
-                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "  Lon : " + String.valueOf(targetLongitude);
+//                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "\nLon : " + String.valueOf(targetLongitude);
+                        targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
                         mTextTLocation.setText(targetLocation);
 
+                        flightStates = "Currnet FollowMeMission State : " + followMeMissionOperator.getCurrentState().getName();
+                        mTextDistance.setText(flightStates);
+
                         //Distance target to Current value
+                        flightStates = "Flight state : " + mTSPI.getFlightState().name() +"\nMission state : "+ followMeMissionOperator.getCurrentState().getName();
+                        mTextDistance.setText(flightStates);
                     }
                 });
             }
@@ -211,20 +254,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onReturn(View view){
         this.finish();
-    }
-
-    private void initUI() {
-
-        mBtnInit = (Button) findViewById(R.id.init);
-        mBtnStart = (Button) findViewById(R.id.start);
-        mBtnStop = (Button) findViewById(R.id.stop);
-        mTextCLocation = (TextView)findViewById(R.id.text_current_location);
-        mTextTLocation = (TextView)findViewById(R.id.text_target_location);
-
-        mBtnInit.setOnClickListener(this);
-        mBtnStart.setOnClickListener(this);
-        mBtnStop.setOnClickListener(this);
-
     }
 
     @Override
@@ -236,20 +265,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case R.id.start:{
                 Log.d("onClick","start");
-                showToast("Mission Start");
+                //showToast("Mission Start");
+
+                targetLatitude = mTSPI.getLatitude();
+                targetLongitude = mTSPI.getLongitude();
+
+                //followMeMissionOperator.addListener();
+
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
                 ), new CommonCallbacks.CompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
-                        Log.d("MissionStart", "Start Suceess");
+                        Log.d("MissionStart", "Mission Start");
+                        //ToDo Thread 객체화 하기(OnPause, Stop.onClickListener Thread.interrupt 넣기)
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 int cnt = 0;
                                 while(cnt < 50) {
-                                    targetLatitude = currentLatitude + 1 * ONE_METER_OFFSET;
-                                    targetLongitude = currentLongitude;
+                                    targetLatitude = targetLatitude + 10 * ONE_METER_OFFSET;
+
+                                    targetLongitude = targetLongitude * 1;
+
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
 
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
@@ -262,8 +300,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     });
                                     cnt++;
                                 }
-                                Log.d("MissionStart" , "Mission Success");
-                                showToast("Mission Success");
+                                Log.d("MissionStart" , "Mission Ended");
+                                //showToast("Mission Ended");
 
                             }
                         }).start();
@@ -273,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case R.id.stop:{
                 Log.d("onClick","stop");
-                //followMeMissionOperator.stopMission(djiError -> ToastUtils.setResultToToast(djiError != null ? "" : djiError.getDescription()));
+                followMeMissionOperator.stopMission(djiError -> showToast("Mission Stop"));
                 break;
             }
             default:
@@ -299,6 +337,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap)  {
         Log.d("Map", "Map ready.");
         mMap = googleMap;
+
+        LatLng initLocation = new LatLng(0.0,0.0);
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
             if
@@ -309,7 +350,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         1);
             }
         }
+
         mMap.setMyLocationEnabled(true);
+
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         long minTime = 1000; //millisecond
@@ -318,33 +361,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // this location listener is to the device this application is running on only
         // to follow a different device, we will need a check box or radio button of some sort to
         // either pick to follow the good drone or enemy drone
+
+        // 현재 위치 표시
         LocationListener listener = new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
                 Double latitude = location.getLatitude();
                 Double longitude = location.getLongitude();
                 LatLng curPoint = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint,16));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint,18));
                 locationManager.removeUpdates(this);
             }
         };
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance,  listener);
+
+
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
     }
+
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
     private void updateDroneLocation(){
 
-        LatLng pos = new LatLng(mTSPI.getLatitude(),mTSPI.getLongitude());
+        LatLng curPosition = new LatLng(mTSPI.getLatitude(),mTSPI.getLongitude());
 
         final MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(pos);
+        markerOptions.position(curPosition);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+        LatLng tarPosition = new LatLng(targetLatitude,targetLongitude);
+
+        final MarkerOptions markerOptions2 = new MarkerOptions();
+        markerOptions2.position(tarPosition);
+        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+        //drawLine
+//        pathPoints.set(0, curPosition);
+//        pathPoints.set(1, tarPosition);
 
         //below are rotations
         //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
@@ -353,11 +412,77 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //markerOptions.rotation(angle);
         //rotation ends
 
+        LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
+
+
         if (droneMarker != null) {
             droneMarker.remove();
         }
 
+        //drawPolyline();
+
         droneMarker = mMap.addMarker(markerOptions);
+        droneMarker = mMap.addMarker(markerOptions2);
+    }
+
+    private void setUpListener() {
+        // Example of Listener
+        showToast("Active Listener");
+        listener = new FollowMeMissionOperatorListener() {
+            @Override
+            public void onExecutionUpdate(@NonNull @NotNull FollowMeMissionEvent followMeMissionEvent) {
+                // Example of Execution Listener
+                Log.d("FollowMeMissionListener Active",
+                        (followMeMissionEvent.getPreviousState() == null
+                                ? ""
+                                : followMeMissionEvent.getPreviousState().getName())
+                                + ", "
+                                + followMeMissionEvent.getCurrentState().getName()
+                                + ", "
+                                + followMeMissionEvent.getDistanceToTarget()
+                                + ", "
+                                + followMeMissionEvent.getError().getDescription());
+                //updateFollowMeMissionState();
+            }
+
+            @Override
+            public void onExecutionStart() {
+                showToast("Mission started");
+                //updateFollowMeMissionState();
+            }
+
+            @Override
+            public void onExecutionFinish(@Nullable @org.jetbrains.annotations.Nullable DJIError djiError) {
+                showToast("Mission finished");
+                //updateFollowMeMissionState();
+            }
+        };
+    }
+
+
+    private void selectColor(MarkerOptions markerOptions, String color){
+
+        switch (color) {
+            case "red":
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                break;
+            case "green":
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                break;
+            default:
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                break;
+        }
+    }
+
+    private void drawPolyline(){
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.RED);
+        polylineOptions.width(5);
+        polylineOptions.addAll(pathPoints);
+        mMap.addPolyline(polylineOptions);
+
     }
 
     private void showToast(final String toastMsg) {
