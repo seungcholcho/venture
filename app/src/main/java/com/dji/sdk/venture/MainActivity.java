@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -36,17 +37,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import dji.common.error.DJIError;
 import dji.common.mission.followme.FollowMeHeading;
 import dji.common.mission.followme.FollowMeMission;
+import dji.common.mission.followme.FollowMeMissionEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.followme.FollowMeMissionOperator;
+import dji.sdk.mission.followme.FollowMeMissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -64,11 +69,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Button mBtnInit, mBtnStart, mBtnStop;
-    private TextView mTextTLocation,mTextCLocation;
+    private TextView mTextTLocation,mTextCLocation, mTextDistance;
 
     private String currentLocation;
     private String targetLocation;
-
+    private String flightStatus;
 
     private double currentLatitude = 0;
     private double currentLongitude = 0;
@@ -85,10 +90,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private FollowMeMissionOperator followMeMissionOperator = null;
 
+    private FollowMeMissionOperatorListener listener;
+
     List<LatLng> pathPoints = new ArrayList<>();
 
     private LatLng initLocation;
 
+    private void initUI() {
+
+        mBtnInit = (Button) findViewById(R.id.init);
+        mBtnStart = (Button) findViewById(R.id.start);
+        mBtnStop = (Button) findViewById(R.id.stop);
+        mTextCLocation = (TextView)findViewById(R.id.text_current_location);
+        mTextTLocation = (TextView)findViewById(R.id.text_target_location);
+        mTextDistance = (TextView)findViewById(R.id.text_distance);
+
+        mBtnInit.setOnClickListener(this);
+        mBtnStart.setOnClickListener(this);
+        mBtnStop.setOnClickListener(this);
+
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState){
 
@@ -119,12 +140,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateTSPI = new BackgroundCallback(mTSPI, flightController);
             updateTSPI.start();
 
+            //최대 고도 제한
             flightController.setMaxFlightHeight(100,new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
                 }
             });
 
+            //최대 반경 제한
             flightController.setMaxFlightRadius(1000,new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
@@ -134,6 +157,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //followMeMissionOpertor 객체 주입
             followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
 
+            //folloMeMission Listener 활성화
+            setUpListener();
+
+            //Mission 활성화 상태 출력
+            flightStatus = followMeMissionOperator.getCurrentState().getName();
+            mTextDistance.setText(flightStatus);
+
         } catch (Exception e) {
             Log.d("FlightControllerState", "not Connected");
         }
@@ -141,21 +171,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //현재위치 초기화
         currentLatitude = mTSPI.getLatitude();
         currentLongitude = mTSPI.getLongitude();
-
         targetLatitude = mTSPI.getLatitude();
         targetLongitude = mTSPI.getLongitude();
 
-//        targetLatitude = 0.0;
-//        targetLongitude = 0.0;
-
-        final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        initLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
-        pathPoints.add(initLocation);
-        pathPoints.add(initLocation);
+        //pathPoint값 초기화
+//        initLocation = new LatLng(currentLatitude, currentLongitude);
+//
+//        pathPoints.add(initLocation);
+//        pathPoints.add(initLocation);
     }
 
     @Override
@@ -187,8 +210,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         currentLocation = "Lat : " + String.valueOf(mTSPI.getLatitude()) + "\nLon : " + String.valueOf(mTSPI.getLongitude());
                         mTextCLocation.setText(currentLocation);
 
-                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "\nLon : " + String.valueOf(targetLongitude);
+//                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "\nLon : " + String.valueOf(targetLongitude);
+                        targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
                         mTextTLocation.setText(targetLocation);
+
+                        flightStatus = "Currnet FollowMeMission State : " + followMeMissionOperator.getCurrentState().getName();
+                        mTextDistance.setText(flightStatus);
 
                         //Distance target to Current value
                     }
@@ -201,20 +228,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.finish();
     }
 
-    private void initUI() {
-
-        mBtnInit = (Button) findViewById(R.id.init);
-        mBtnStart = (Button) findViewById(R.id.start);
-        mBtnStop = (Button) findViewById(R.id.stop);
-        mTextCLocation = (TextView)findViewById(R.id.text_current_location);
-        mTextTLocation = (TextView)findViewById(R.id.text_target_location);
-
-        mBtnInit.setOnClickListener(this);
-        mBtnStart.setOnClickListener(this);
-        mBtnStop.setOnClickListener(this);
-
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -224,10 +237,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case R.id.start:{
                 Log.d("onClick","start");
-                showToast("Mission Start");
+                //showToast("Mission Start");
 
                 targetLatitude = mTSPI.getLatitude();
                 targetLongitude = mTSPI.getLongitude();
+
+                //followMeMissionOperator.addListener();
 
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
@@ -258,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     cnt++;
                                 }
                                 Log.d("MissionStart" , "Mission Ended");
-                                showToast("Mission Ended");
+                                //showToast("Mission Ended");
 
                             }
                         }).start();
@@ -380,6 +395,40 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         droneMarker = mMap.addMarker(markerOptions);
         droneMarker = mMap.addMarker(markerOptions2);
+    }
+
+    private void setUpListener() {
+        // Example of Listener
+        showToast("Active Listener");
+        listener = new FollowMeMissionOperatorListener() {
+            @Override
+            public void onExecutionUpdate(@NonNull @NotNull FollowMeMissionEvent followMeMissionEvent) {
+                // Example of Execution Listener
+                Log.d("FollowMeMissionListener Active",
+                        (followMeMissionEvent.getPreviousState() == null
+                                ? ""
+                                : followMeMissionEvent.getPreviousState().getName())
+                                + ", "
+                                + followMeMissionEvent.getCurrentState().getName()
+                                + ", "
+                                + followMeMissionEvent.getDistanceToTarget()
+                                + ", "
+                                + followMeMissionEvent.getError().getDescription());
+                //updateFollowMeMissionState();
+            }
+
+            @Override
+            public void onExecutionStart() {
+                showToast("Mission started");
+                //updateFollowMeMissionState();
+            }
+
+            @Override
+            public void onExecutionFinish(@Nullable @org.jetbrains.annotations.Nullable DJIError djiError) {
+                showToast("Mission finished");
+                //updateFollowMeMissionState();
+            }
+        };
     }
 
 
