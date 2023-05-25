@@ -94,13 +94,37 @@
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <TextView
-            android:id="@+id/text_distance"
-            android:layout_width="wrap_content"
+<!--        <TextView-->
+<!--            android:id="@+id/text_distance"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:padding="10dp"-->
+<!--            android:text="distance"-->
+<!--            app:layout_constraintEnd_toEndOf="parent" />-->
+
+        <LinearLayout
+            android:id="@+id/sublinearLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="distance"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout1">
+
+            <EditText
+                android:id="@+id/data_lat"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:hint="Enter text 1"/>
+
+            <EditText
+                android:id="@+id/data_lon"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:hint="Enter text 2"/>
+
+        </LinearLayout>
 
 
     </LinearLayout>
@@ -120,7 +144,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="init" />
+            android:text="input" />
 
         <Button
             android:id="@+id/start"

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -82,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button mBtnInit, mBtnStart, mBtnStop;
     private TextView mTextTLocation, mTextCLocation, mTextDistance;
 
+    private EditText editTextlat, editTextlong;
+
     private String currentLocation;
     private String targetLocation;
     private String flightStates;
@@ -91,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private double targetLatitude = 0;
     private double targetLongitude = 0;
+
+    private double wantedLatitude = 0;
+    private double wantedLongitude = 0;
+
 
     private static final double ONE_METER_OFFSET = 0.000009005520;
     //0.00000899322;
@@ -116,7 +123,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBtnStop = (Button) findViewById(R.id.stop);
         mTextCLocation = (TextView) findViewById(R.id.text_current_location);
         mTextTLocation = (TextView) findViewById(R.id.text_target_location);
-        mTextDistance = (TextView) findViewById(R.id.text_distance);
+        //mTextDistance = (TextView) findViewById(R.id.text_distance);
+
+        editTextlat = findViewById(R.id.data_lat);
+        editTextlong = findViewById(R.id.data_lon);
 
         mBtnInit.setOnClickListener(this);
         mBtnStart.setOnClickListener(this);
@@ -211,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
 
-//        db.collection("05241600_mal").orderBy("Time", Query.Direction.DESCENDING).get()
+//        db.collection("0526_flighttest").orderBy("Time", Query.Direction.DESCENDING).get()
 //                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 //                    @Override
 //                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -282,6 +292,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (v.getId()) {
             case R.id.init: {
                 Log.d("onClick", "init");
+
+//                String lat = editTextlat.getText().toString();
+//                String lon = editTextlat.getText().toString();
+//
+//                wantedLatitude = Double.parseDouble(lat);
+//                wantedLongitude = Double.parseDouble(lon);
+//
+//                showToast("lat: " + lat + "\nlon: " + lon);
+
                 break;
             }
             case R.id.start: {
@@ -305,9 +324,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void run() {
                                 int cnt = 0;
-                                while (cnt < 50) {
-                                    targetLatitude = targetLatitude + 10 * ONE_METER_OFFSET;
-
+                                while (cnt < 100) {
+                                    targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
                                     targetLongitude = targetLongitude * 1;
 
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
@@ -315,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
                                         try {
                                             //Thread sleep 1/1000
-                                            Thread.sleep(1500);
+                                            Thread.sleep(1000);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
@@ -341,14 +359,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void setResultToToast(final String string) {
-        MainActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, string, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
 
     @Override
     public void onMapClick(LatLng point) {
@@ -536,6 +547,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
+    private void setResultToToast(final String string) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, string, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
 }
