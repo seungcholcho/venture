@@ -315,8 +315,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("onClick", "start");
                 //showToast("Mission Start");
 
-                targetLatitude = maliciousTSPI.getLatitude();
-                targetLongitude = maliciousTSPI.getLongitude();
+                targetLatitude = defensiveTSPI.getLatitude();
+                targetLongitude = defensiveTSPI.getLongitude();
 
                 //followMeMissionOperator.addListener();
 
@@ -454,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final MarkerOptions markerMission = new MarkerOptions();
         markerMission.position(tarPosition);
         markerMission.zIndex(0);
-        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
 
         //malicious Marker
@@ -462,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         final MarkerOptions markerMal = new MarkerOptions();
         markerMal.position(malPosition);
-        markerMal.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+        markerMal.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
         mMap.clear();
 
