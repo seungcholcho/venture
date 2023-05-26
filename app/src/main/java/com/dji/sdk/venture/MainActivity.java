@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,8 +82,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button mBtnInit, mBtnStart, mBtnStop;
     private TextView mTextTLocation, mTextCLocation, mTextDistance;
 
-    private EditText editTextlat, editTextlong;
-
     private String currentLocation;
     private String targetLocation;
     private String flightStates;
@@ -94,10 +91,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private double targetLatitude = 0;
     private double targetLongitude = 0;
-
-    private double wantedLatitude = 0;
-    private double wantedLongitude = 0;
-
 
     private static final double ONE_METER_OFFSET = 0.000009005520;
     //0.00000899322;
@@ -123,10 +116,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBtnStop = (Button) findViewById(R.id.stop);
         mTextCLocation = (TextView) findViewById(R.id.text_current_location);
         mTextTLocation = (TextView) findViewById(R.id.text_target_location);
-        //mTextDistance = (TextView) findViewById(R.id.text_distance);
-
-        editTextlat = findViewById(R.id.data_lat);
-        editTextlong = findViewById(R.id.data_lon);
+        mTextDistance = (TextView) findViewById(R.id.text_distance);
 
         mBtnInit.setOnClickListener(this);
         mBtnStart.setOnClickListener(this);
@@ -174,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
 
             //최대 반경 제한
-            flightController.setMaxFlightRadius(1000, new CommonCallbacks.CompletionCallback() {
+            flightController.setMaxFlightRadius(500, new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
                 }
@@ -198,9 +188,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLatitude = defensiveTSPI.getLatitude();
         currentLongitude = defensiveTSPI.getLongitude();
 
-        //database collection get
-
-
         targetLatitude = defensiveTSPI.getLatitude();
         targetLongitude = defensiveTSPI.getLongitude();
 
@@ -221,41 +208,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
 
-//        db.collection("0526_flighttest").orderBy("Time", Query.Direction.DESCENDING).get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            for (QueryDocumentSnapshot document : task.getResult()) {
-//
-//                                showToast(String.valueOf(document.getData()));
-//
-//                                //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-//                                //Date Timestamp = changeUnixTime(Time);
-//                                String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                double Altitude = (double) document.getData().get("Altitude");
-//                                double Latitude = (double) document.getData().get("Latitude");
-//                                double Longitude = (double) document.getData().get("Longitude");
-//
-//                                Log.d("Firebase","Time : "+document.getData().get("Time").getClass().getName());
-//                                Log.d("Firebase","GpsSignal : "+document.getData().get("GpsSignal").getClass().getName());
-//                                Log.d("Firebase","Altitude : "+document.getData().get("Altitude").getClass().getName());
-//                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
-//                                Log.d("Firebase","Latitude : "+document.getData().get("Latitude").getClass().getName());
-//
-//                                maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
-//                            }
-//                        } else {
-//                            Log.w(TAG, "Error getting documents.", task.getException());
-//                        }
-//                    }
-//                });
-
         handler.postDelayed(runnable = new Runnable() {
             //update location of our drone every loadIntervals seconds.
             @Override
             public void run() {
+                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+
+                                    int i = 0;
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                        //showToast(String.valueOf(document.getData()));
+
+                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+                                        //Date Timestamp = changeUnixTime(Time);
+                                        String GpsSignal = (String) document.getData().get("GpsSignal");
+                                        double Altitude = (double) document.getData().get("Altitude");
+                                        double Latitude = (double) document.getData().get("Latitude");
+                                        double Longitude = (double) document.getData().get("Longitude");
+
+                                        Log.d("Firebase","Time : " + String.valueOf(document.getData().get("Time")));
+                                        Log.d("Firebase","GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+                                        Log.d("Firebase","Altitude : " + String.valueOf(document.getData().get("Altitude")));
+                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
+
+                                        maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
+
+                                        i++;
+                                        if (i == 1){
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    Log.w(TAG, "Error getting documents.", task.getException());
+                                }
+                            }
+                        });
+
                 handler.postDelayed(runnable, loadIntervals);
+
                 //Mark on map in real time
                 updateDroneLocation();
 
@@ -270,9 +265,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "\nLon : " + String.valueOf(targetLongitude);
                         targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
                         mTextTLocation.setText(targetLocation);
-
-                        flightStates = "Currnet FollowMeMission State : " + followMeMissionOperator.getCurrentState().getName();
-                        mTextDistance.setText(flightStates);
 
                         //Distance target to Current value
                         flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName();
@@ -291,26 +283,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.init: {
-                Log.d("onClick", "init");
-
-//                String lat = editTextlat.getText().toString();
-//                String lon = editTextlat.getText().toString();
-//
-//                wantedLatitude = Double.parseDouble(lat);
-//                wantedLongitude = Double.parseDouble(lon);
-//
-//                showToast("lat: " + lat + "\nlon: " + lon);
-
-                break;
-            }
-            case R.id.start: {
                 Log.d("onClick", "start");
                 //showToast("Mission Start");
 
-                targetLatitude = defensiveTSPI.getLatitude();
-                targetLongitude = defensiveTSPI.getLongitude();
+                //위도 경도 위치 확인하기
+                targetLatitude = 40.2248041984068;
+                targetLongitude = -87.002733014605;
+
+                double tmp = maliciousTSPI.getLatitude();
+
+                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
+                        currentLatitude , currentLongitude, 30f
+                ), new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        Log.d("MissionStart", "Mission Start");
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                showToast("onResult in Thread run");
+
+                            }
+                        }).start();
+                    }
+                });
+                break;
+            }
+            case R.id.start: {
+                showToast("onClickStart");
+                Log.d("onClick", "start");
+                //showToast("Mission Start");
+
+                targetLatitude = maliciousTSPI.getLatitude();
+                targetLongitude = maliciousTSPI.getLongitude();
 
                 //followMeMissionOperator.addListener();
+
+                double tmp = maliciousTSPI.getLatitude();
 
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
@@ -324,8 +334,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void run() {
                                 int cnt = 0;
-                                while (cnt < 100) {
+                                while (cnt < 50) {
+
                                     targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
+
                                     targetLongitude = targetLongitude * 1;
 
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
@@ -333,16 +345,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
                                         try {
                                             //Thread sleep 1/1000
-                                            Thread.sleep(1000);
+                                            Thread.sleep(1500);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
                                     });
                                     cnt++;
                                 }
-                                Log.d("MissionStart", "Mission Ended");
-                                //showToast("Mission Ended");
-
+                                showToast("Mission Ended");
                             }
                         }).start();
                     }
@@ -359,7 +369,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
+    private void setResultToToast(final String string) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, string, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     @Override
     public void onMapClick(LatLng point) {
@@ -434,18 +451,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //followMeMission Marker
         LatLng tarPosition = new LatLng(targetLatitude, targetLongitude);
 
-        final MarkerOptions markerOptions2 = new MarkerOptions();
-        markerOptions2.position(tarPosition);
-        markerOptions2.zIndex(0);
-        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        final MarkerOptions markerMission = new MarkerOptions();
+        markerMission.position(tarPosition);
+        markerMission.zIndex(0);
+        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
 
         //malicious Marker
-//        LatLng tarPosition = new LatLng(maliciousTSPI.getLatitude(),maliciousTSPI.getLongitude());
-//
-//        final MarkerOptions markerOptions2 = new MarkerOptions();
-//        markerOptions2.position(tarPosition);
-//        markerOptions2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+        LatLng malPosition = new LatLng(maliciousTSPI.getLatitude(),maliciousTSPI.getLongitude());
+
+        final MarkerOptions markerMal = new MarkerOptions();
+        markerMal.position(malPosition);
+        markerMal.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+
+        mMap.clear();
+
+        droneMarker = mMap.addMarker(markerOur);
+        droneMarker = mMap.addMarker(markerMission);
+        droneMarker = mMap.addMarker(markerMal);
 
         //drawPolyline();
 
@@ -461,16 +484,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //rotation ends
 
         //LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
-
-        mMap.clear();
-
-        droneMarker = mMap.addMarker(markerOur);
-        droneMarker = mMap.addMarker(markerOptions2);
     }
 
     private void setUpListener() {
         // Example of Listener
-        showToast("Active Listener");
+        //showToast("Active Listener");
         listener = new FollowMeMissionOperatorListener() {
             @Override
             public void onExecutionUpdate(@NonNull @NotNull FollowMeMissionEvent followMeMissionEvent) {
@@ -547,13 +565,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-    private void setResultToToast(final String string) {
-        MainActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, string, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
 
 }
+
