@@ -1,13 +1,8 @@
 package com.dji.sdk.venture;
 
-import static dji.log.GlobalConfig.TAG;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,21 +21,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.jetbrains.annotations.NotNull;
@@ -49,15 +37,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
 
 import dji.common.error.DJIError;
+import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
+import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
+import dji.common.flightcontroller.virtualstick.VerticalControlMode;
+import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.mission.followme.FollowMeHeading;
 import dji.common.mission.followme.FollowMeMission;
 import dji.common.mission.followme.FollowMeMissionEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
-import dji.log.LogDialog;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.flightcontroller.Simulator;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.followme.FollowMeMissionOperator;
 import dji.sdk.mission.followme.FollowMeMissionOperatorListener;
@@ -80,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     BackgroundCallback updateTSPI;
 
     private GoogleMap mMap;
-    private Button mBtnInit, mBtnStart, mBtnStop;
-    private TextView mTextTLocation, mTextCLocation, mTextDistance;
+    private Button mBtntmp2, mBtnStart, mBtnStop, mBtnDisable,mBtnEnable, mBtntmp1;
+    private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery;
 
     private String currentLocation;
     private String targetLocation;
@@ -110,19 +103,207 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LatLng initLocation;
 
+    private OnScreenJoystick screenJoystickRight;
+    private OnScreenJoystick screenJoystickLeft;
+
+    private float pitch, roll, yaw, throttle;
+
+    private Timer sendVirtualStickDataTimer;
+
     private void initUI() {
 
-        mBtnInit = (Button) findViewById(R.id.init);
-        mBtnStart = (Button) findViewById(R.id.start);
-        mBtnStop = (Button) findViewById(R.id.stop);
+        mTextTime = (TextView) findViewById(R.id.text_time);
+        mTextBattery = (TextView) findViewById(R.id.text_battery);
+
         mTextCLocation = (TextView) findViewById(R.id.text_current_location);
         mTextTLocation = (TextView) findViewById(R.id.text_target_location);
         mTextDistance = (TextView) findViewById(R.id.text_distance);
 
-        mBtnInit.setOnClickListener(this);
-        mBtnStart.setOnClickListener(this);
-        mBtnStop.setOnClickListener(this);
+        mBtnEnable = (Button) findViewById(R.id.btn_enable);
+        mBtnStart = (Button) findViewById(R.id.btn_start);
+        mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
 
+        mBtnDisable = (Button) findViewById(R.id.btn_disable);
+        mBtnStop = (Button) findViewById(R.id.btn_stop);
+        mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
+
+//        screenJoystickRight = (OnScreenJoystick) findViewById(R.id.joystickRight);
+//        screenJoystickLeft = (OnScreenJoystick) findViewById(R.id.joystickLeft);
+
+        mBtnEnable.setOnClickListener(this);
+        mBtnStart.setOnClickListener(this);
+        mBtntmp1.setOnClickListener(this);
+
+        mBtnDisable.setOnClickListener(this);
+        mBtnStop.setOnClickListener(this);
+        mBtntmp2.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_enable: {
+                Log.d("onClick", "Enable");
+
+                flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        flightController.setVirtualStickAdvancedModeEnabled(true);
+                    }
+                });
+
+                break;
+            }
+            case R.id.btn_disable: {
+                Log.d("onClick", "Disable");
+
+                flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                    }
+                });
+
+                break;
+            }
+            case R.id.btn_start: {
+                //showToast("onClickStart");
+                Log.d("onClick", "start");
+                //showToast("Mission Start");
+
+                targetLatitude = defensiveTSPI.getLatitude();
+                targetLongitude = defensiveTSPI.getLongitude();
+
+                double tmp = maliciousTSPI.getLatitude();
+
+                //showToast(String.valueOf(followMeMissionOperator.getCurrentState()));
+
+                Log.d("MissionStart","before Mission start");
+                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
+                        currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
+                ), new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        Log.d("MissionStart", "Mission Start");
+
+                        //ToDo Thread 객체화 하기(OnPause, Stop.onClickListener Thread.interrupt 넣기)
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                int cnt = 0;
+                                while (cnt < 5) {
+
+                                    targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
+                                    targetLongitude = targetLongitude * 1;
+
+                                    LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
+
+                                    followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
+                                        try {
+                                            //Thread sleep 1/1000
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                                    cnt++;
+                                }
+                                //showToast("Mission Ended");
+                            }
+                        }).start();
+                    }
+                });
+                break;
+            }
+            case R.id.btn_stop: {
+                Log.d("onClick", "stop");
+                followMeMissionOperator.stopMission(djiError -> showToast("Mission Stop"));
+                break;
+            }
+            case R.id.btn_tmp1: {
+                Log.d("onClick", "start");
+
+                //위도 경도 위치 확인하기
+                targetLatitude = 40.2248041984068;
+                targetLongitude = -87.002733014605;
+
+                double tmp = maliciousTSPI.getLatitude();
+
+                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,currentLatitude,currentLongitude,30f
+                ), new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        Log.d("MissionStart", "Mission Start");
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //showToast("onResult in Thread run");
+
+                            }
+                        }).start();
+                    }
+                });
+                break;
+            }
+            case R.id.btn_tmp2: {
+                Log.d("onClick", "tmp2");
+
+//                screenJoystickLeft.setJoystickListener(new OnScreenJoystickListener() {
+//
+//                    @Override
+//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+//                        if (Math.abs(pX) < 0.02) {
+//                            pX = 0;
+//                        }
+//
+//                        if (Math.abs(pY) < 0.02) {
+//                            pY = 0;
+//                        }
+//                        float pitchJoyControlMaxSpeed = 10;
+//                        float rollJoyControlMaxSpeed = 10;
+//
+//                        pitch = pitchJoyControlMaxSpeed * pY;
+//                        roll = rollJoyControlMaxSpeed * pX;
+//
+//                        if (null == sendVirtualStickDataTimer) {
+//                            sendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                            sendVirtualStickDataTimer = new Timer();
+//                            sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 200);
+//                        }
+//                    }
+//                });
+//
+//                screenJoystickRight.setJoystickListener(new OnScreenJoystickListener() {
+//
+//                    @Override
+//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+//                        if (Math.abs(pX) < 0.02) {
+//                            pX = 0;
+//                        }
+//
+//                        if (Math.abs(pY) < 0.02) {
+//                            pY = 0;
+//                        }
+//                        float verticalJoyControlMaxSpeed = 4;
+//                        float yawJoyControlMaxSpeed = 20;
+//
+//                        yaw = yawJoyControlMaxSpeed * pX;
+//                        throttle = verticalJoyControlMaxSpeed * pY;
+//
+//                        if (null == sendVirtualStickDataTimer) {
+//                            sendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                            sendVirtualStickDataTimer = new Timer();
+//                            sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+//                        }
+//                    }
+//                });
+
+
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     @Override
@@ -179,8 +360,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             //flight 상태 + Mission 상태 출력
-            flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName();
+            flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName()
+                    + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
             mTextDistance.setText(flightStates);
+
+            //Virtual Stick
+            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+            flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+
 
         } catch (Exception e) {
             Log.d("FlightControllerState", "not Connected");
@@ -198,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //        pathPoints.add(initLocation);
 //        pathPoints.add(initLocation);
-
     }
 
     @Override
@@ -269,7 +458,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mTextTLocation.setText(targetLocation);
 
                         //Distance target to Current value
-                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName();
+                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName()
+                                + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
                         mTextDistance.setText(flightStates);
                     }
                 });
@@ -279,94 +469,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onReturn(View view) {
         this.finish();
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.init: {
-                Log.d("onClick", "start");
-
-                //위도 경도 위치 확인하기
-                targetLatitude = 40.2248041984068;
-                targetLongitude = -87.002733014605;
-
-                double tmp = maliciousTSPI.getLatitude();
-
-                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,currentLatitude,currentLongitude,30f
-                ), new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        Log.d("MissionStart", "Mission Start");
-
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //showToast("onResult in Thread run");
-
-                            }
-                        }).start();
-                    }
-                });
-                break;
-            }
-            case R.id.start: {
-                //showToast("onClickStart");
-                Log.d("onClick", "start");
-                //showToast("Mission Start");
-
-                targetLatitude = defensiveTSPI.getLatitude();
-                targetLongitude = defensiveTSPI.getLongitude();
-
-                double tmp = maliciousTSPI.getLatitude();
-
-                //showToast(String.valueOf(followMeMissionOperator.getCurrentState()));
-
-                Log.d("MissionStart","before Mission start");
-                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
-                        currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
-                ), new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        Log.d("MissionStart", "Mission Start");
-
-                        //ToDo Thread 객체화 하기(OnPause, Stop.onClickListener Thread.interrupt 넣기)
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                int cnt = 0;
-                                while (cnt < 5) {
-
-                                    targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
-                                    targetLongitude = targetLongitude * 1;
-
-                                    LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
-
-                                    followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
-                                        try {
-                                            //Thread sleep 1/1000
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                                    cnt++;
-                                }
-                                //showToast("Mission Ended");
-                            }
-                        }).start();
-                    }
-                });
-                break;
-            }
-            case R.id.stop: {
-                Log.d("onClick", "stop");
-                followMeMissionOperator.stopMission(djiError -> showToast("Mission Stop"));
-                break;
-            }
-            default:
-                break;
-        }
     }
 
     private void setResultToToast(final String string) {
@@ -421,14 +523,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, listener);
 
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
     }
 
     private void updateDroneLocation() {
@@ -569,6 +663,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+    }
 
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
 }
 

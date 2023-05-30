@@ -12,67 +12,40 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/linearLayout1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/BatteryView"
+            android:id="@+id/text_battery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="100dp"
             android:text="battery residual"
-            app:layout_constraintBottom_toTopOf="@+id/mapFrame"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/TimeView"
+            android:id="@+id/text_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Time residual"
-            app:layout_constraintBottom_toTopOf="@+id/mapFrame"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!--            <Button-->
-        <!--                android:id="@+id/location"-->
-        <!--                android:layout_width="match_parent"-->
-        <!--                android:layout_height="wrap_content"-->
-        <!--                android:layout_weight="1"-->
-        <!--                android:text="location"/>-->
-
     </LinearLayout>
-
-<!--    <FrameLayout-->
-<!--        android:id="@+id/mapFrame"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/linearLayout1"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.0"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/linearLayout0"-->
-<!--        app:layout_constraintVertical_bias="0.0">-->
-
-<!--        <fragment-->
-<!--            android:id="@+id/map"-->
-<!--            class="com.google.android.gms.maps.SupportMapFragment"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent" />-->
-
-<!--    </FrameLayout>-->
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout0"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout0">
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.800">
 
         <TextView
             android:id="@+id/text_current_location"
@@ -113,28 +86,96 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout1">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout1"
+        app:layout_constraintVertical_bias="0.200">
 
         <Button
-            android:id="@+id/init"
+            android:id="@+id/btn_enable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="input" />
+            android:text="Enable Virtual Stick" />
 
         <Button
-            android:id="@+id/start"
+            android:id="@+id/btn_start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="start" />
+            android:text="Start Mission" />
 
         <Button
-            android:id="@+id/stop"
+            android:id="@+id/btn_tmp1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="stop" />
+            android:text="tmp1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintVertical_bias="0.150">
+
+        <Button
+            android:id="@+id/btn_disable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Disable Virtual Stick" />
+
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Stop Mission" />
+
+        <Button
+            android:id="@+id/btn_tmp2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tmp2" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:layout_constraintVertical_bias="0.200">
+
+        <com.dji.sdk.venture.OnScreenJoystick
+            android:id="@+id/directionJoystickLeft"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:background="@mipmap/joystick_bg" />
+
+        <com.dji.sdk.venture.OnScreenJoystick
+            android:id="@+id/directionJoystickRight"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="550dp"
+            android:layout_marginBottom="10dp"
+            android:background="@mipmap/joystick_bg" />
+
+
 
 
     </LinearLayout>
