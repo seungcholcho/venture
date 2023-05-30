@@ -38,8 +38,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import dji.common.error.DJIError;
+import dji.common.flightcontroller.virtualstick.FlightControlData;
 import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
 import dji.common.flightcontroller.virtualstick.VerticalControlMode;
@@ -248,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.btn_tmp2: {
                 Log.d("onClick", "tmp2");
 
+                //Thread 사용해서 임의 값 업데이트 하기.
 //                screenJoystickLeft.setJoystickListener(new OnScreenJoystickListener() {
 //
 //                    @Override
@@ -303,6 +306,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             default:
                 break;
+        }
+    }
+
+    private class SendVirtualStickDataTask extends TimerTask {
+        @Override
+        public void run() {
+            if (flightController != null) {
+                //接口写反了，setPitch()应该传入roll值，setRoll()应该传入pitch值
+                flightController.sendVirtualStickFlightControlData(new FlightControlData(roll, pitch, yaw, throttle), new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        if (djiError != null) {
+                            //ToastUtils.setResultToToast(djiError.getDescription());
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -398,6 +418,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
+
 
         handler.postDelayed(runnable = new Runnable() {
             //update location of our drone every loadIntervals seconds.
