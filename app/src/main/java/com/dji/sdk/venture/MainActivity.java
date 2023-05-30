@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //folloMeMission Listener 활성화
             setUpListener();
 
+
             //flight 상태 + Mission 상태 출력
             flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName();
             mTextDistance.setText(flightStates);
@@ -284,7 +285,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (v.getId()) {
             case R.id.init: {
                 Log.d("onClick", "start");
-                //showToast("Mission Start");
 
                 //위도 경도 위치 확인하기
                 targetLatitude = 40.2248041984068;
@@ -292,8 +292,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 double tmp = maliciousTSPI.getLatitude();
 
-                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
-                        currentLatitude , currentLongitude, 30f
+                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,currentLatitude,currentLongitude,30f
                 ), new CommonCallbacks.CompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
@@ -302,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                showToast("onResult in Thread run");
+                                //showToast("onResult in Thread run");
 
                             }
                         }).start();
@@ -311,17 +310,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             }
             case R.id.start: {
-                showToast("onClickStart");
+                //showToast("onClickStart");
                 Log.d("onClick", "start");
                 //showToast("Mission Start");
 
                 targetLatitude = defensiveTSPI.getLatitude();
                 targetLongitude = defensiveTSPI.getLongitude();
 
-                //followMeMissionOperator.addListener();
-
                 double tmp = maliciousTSPI.getLatitude();
 
+                //showToast(String.valueOf(followMeMissionOperator.getCurrentState()));
+
+                Log.d("MissionStart","before Mission start");
                 followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
                         currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
                 ), new CommonCallbacks.CompletionCallback() {
@@ -334,10 +334,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void run() {
                                 int cnt = 0;
-                                while (cnt < 50) {
+                                while (cnt < 5) {
 
                                     targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
-
                                     targetLongitude = targetLongitude * 1;
 
                                     LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
@@ -345,14 +344,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
                                         try {
                                             //Thread sleep 1/1000
-                                            Thread.sleep(1500);
+                                            Thread.sleep(1000);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
                                     });
                                     cnt++;
                                 }
-                                showToast("Mission Ended");
+                                //showToast("Mission Ended");
                             }
                         }).start();
                     }
@@ -493,31 +492,40 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onExecutionUpdate(@NonNull @NotNull FollowMeMissionEvent followMeMissionEvent) {
                 // Example of Execution Listener
-                Log.d("FollowMeMissionListener Active",
-                        (followMeMissionEvent.getPreviousState() == null
-                                ? ""
-                                : followMeMissionEvent.getPreviousState().getName())
-                                + ", "
-                                + followMeMissionEvent.getCurrentState().getName()
-                                + ", "
-                                + followMeMissionEvent.getDistanceToTarget()
-                                + ", "
-                                + followMeMissionEvent.getError().getDescription());
+                showToast("Update in listener");
+                Log.d("onExcutionUpdate","onExcutionUpdate");
+
+//                Log.d("FollowMeMissionListener Active",
+//                        (followMeMissionEvent.getPreviousState() == null
+//                                ? ""
+//                                : followMeMissionEvent.getPreviousState().getName())
+//                                + ", "
+//                                + followMeMissionEvent.getCurrentState().getName()
+//                                + ", "
+//                                + followMeMissionEvent.getDistanceToTarget()
+//                                + ", "
+//                                + followMeMissionEvent.getError().getDescription());
                 //updateFollowMeMissionState();
             }
 
             @Override
             public void onExecutionStart() {
-                showToast("Mission started");
+                Log.d("setuplistener" , "onExecutionStart");
+                //showToast("Mission started");
                 //updateFollowMeMissionState();
             }
 
             @Override
             public void onExecutionFinish(@Nullable @org.jetbrains.annotations.Nullable DJIError djiError) {
-                showToast("Mission finished");
+                Log.d("setuplistener" , "onExecutionFinish");
+                //showToast("Mission finished");
                 //updateFollowMeMissionState();
             }
         };
+
+        //listener.onExecutionStart();
+        followMeMissionOperator.addListener(listener);
+
     }
 
 
