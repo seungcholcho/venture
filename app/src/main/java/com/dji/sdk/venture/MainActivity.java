@@ -52,7 +52,6 @@ import dji.common.mission.followme.FollowMeMissionEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.flightcontroller.Simulator;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.followme.FollowMeMissionOperator;
 import dji.sdk.mission.followme.FollowMeMissionOperatorListener;
@@ -105,12 +104,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LatLng initLocation;
 
-    private OnScreenJoystick screenJoystickRight;
-    private OnScreenJoystick screenJoystickLeft;
+    private OnScreenJoystick vitualStick;
 
     private float pitch, roll, yaw, throttle;
 
     private Timer sendVirtualStickDataTimer;
+
+    private SendVirtualStickDataTask sendVirtualStickDataTask;
 
     private void initUI() {
 
@@ -129,8 +129,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBtnStop = (Button) findViewById(R.id.btn_stop);
         mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
 
-//        screenJoystickRight = (OnScreenJoystick) findViewById(R.id.joystickRight);
-//        screenJoystickLeft = (OnScreenJoystick) findViewById(R.id.joystickLeft);
+        vitualStick = (OnScreenJoystick) findViewById(R.id.virtualStick);
 
         mBtnEnable.setOnClickListener(this);
         mBtnStart.setOnClickListener(this);
@@ -248,60 +247,70 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             }
             case R.id.btn_tmp2: {
+                //start button tmp2
                 Log.d("onClick", "tmp2");
 
                 //Thread 사용해서 임의 값 업데이트 하기.
-//                screenJoystickLeft.setJoystickListener(new OnScreenJoystickListener() {
-//
-//                    @Override
-//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
-//                        if (Math.abs(pX) < 0.02) {
-//                            pX = 0;
-//                        }
-//
-//                        if (Math.abs(pY) < 0.02) {
-//                            pY = 0;
-//                        }
-//                        float pitchJoyControlMaxSpeed = 10;
-//                        float rollJoyControlMaxSpeed = 10;
-//
-//                        pitch = pitchJoyControlMaxSpeed * pY;
-//                        roll = rollJoyControlMaxSpeed * pX;
-//
-//                        if (null == sendVirtualStickDataTimer) {
-//                            sendVirtualStickDataTask = new SendVirtualStickDataTask();
-//                            sendVirtualStickDataTimer = new Timer();
-//                            sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 200);
-//                        }
-//                    }
-//                });
-//
-//                screenJoystickRight.setJoystickListener(new OnScreenJoystickListener() {
-//
-//                    @Override
-//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
-//                        if (Math.abs(pX) < 0.02) {
-//                            pX = 0;
-//                        }
-//
-//                        if (Math.abs(pY) < 0.02) {
-//                            pY = 0;
-//                        }
-//                        float verticalJoyControlMaxSpeed = 4;
-//                        float yawJoyControlMaxSpeed = 20;
-//
-//                        yaw = yawJoyControlMaxSpeed * pX;
-//                        throttle = verticalJoyControlMaxSpeed * pY;
-//
-//                        if (null == sendVirtualStickDataTimer) {
-//                            sendVirtualStickDataTask = new SendVirtualStickDataTask();
-//                            sendVirtualStickDataTimer = new Timer();
-//                            sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
-//                        }
-//                    }
-//                });
+                vitualStick.setJoystickListener(new OnScreenJoystickListener() {
+                    @Override
+                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.d("setJoystickListener", "onStart_run");
 
+                                int cnt = 0;
+                                while (cnt < 5) {
+                                    Log.d("onStart",String.valueOf(cnt));
+                                    setResultToToast("cnt : " + String.valueOf(cnt));
 
+                                    float pitchJoyControlMaxSpeed = 10;
+                                    float rollJoyControlMaxSpeed = 10;
+
+                                    pitch = pitchJoyControlMaxSpeed + cnt;
+                                    roll = rollJoyControlMaxSpeed + cnt;
+
+                                    if (null == sendVirtualStickDataTimer) {
+                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                                        sendVirtualStickDataTimer = new Timer();
+                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
+                                    }
+                                    cnt++;
+                                }
+                            }
+                        }).start();
+                    }
+
+//                    @Override
+//                    public void onStart(OnScreenJoystick joystick) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Log.d("setJoystickListener", "onStart_run");
+//
+//                                int cnt = 0;
+//                                while (cnt < 5) {
+//                                    Log.d("onStart",String.valueOf(cnt));
+//                                    setResultToToast("cnt : " + String.valueOf(cnt));
+//
+//                                    float pitchJoyControlMaxSpeed = 10;
+//                                    float rollJoyControlMaxSpeed = 10;
+//
+//                                    pitch = pitchJoyControlMaxSpeed + cnt;
+//                                    roll = rollJoyControlMaxSpeed + cnt;
+//
+//                                    if (null == sendVirtualStickDataTimer) {
+//                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                                        sendVirtualStickDataTimer = new Timer();
+//                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
+//                                    }
+//                                    cnt++;
+//                                }
+//                            }
+//                        }).start();
+//                    }
+                });
+                //finished button tmp2
                 break;
             }
             default:
@@ -313,7 +322,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             if (flightController != null) {
-                //接口写反了，setPitch()应该传入roll值，setRoll()应该传入pitch值
                 flightController.sendVirtualStickFlightControlData(new FlightControlData(roll, pitch, yaw, throttle), new CommonCallbacks.CompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
@@ -637,7 +645,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         followMeMissionOperator.addListener(listener);
 
     }
-
 
     private void selectColor(MarkerOptions markerOptions, String color) {
 
