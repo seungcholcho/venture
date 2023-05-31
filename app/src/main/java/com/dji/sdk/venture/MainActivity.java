@@ -251,9 +251,77 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("onClick", "tmp2");
 
                 //Thread 사용해서 임의 값 업데이트 하기.
-                vitualStick.setJoystickListener(new OnScreenJoystickListener() {
+//                vitualStick.setJoystickListener(new OnScreenJoystickListener() {
+//                    @Override
+//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Log.d("setJoystickListener", "onStart_run");
+//
+//                                int cnt = 0;
+//                                while (cnt < 5) {
+//                                    Log.d("onStart",String.valueOf(cnt));
+//                                    //setResultToToast("cnt : " + String.valueOf(cnt));
+//
+//                                    float pitchJoyControlMaxSpeed = 10;
+//                                    float rollJoyControlMaxSpeed = 10;
+//
+//                                    float yawJoyControlMaxSpeed = 0;
+//                                    float verticalJoyControlMaxSpeed = 4;
+//
+//                                    pitch = pitchJoyControlMaxSpeed + cnt;
+//                                    roll = rollJoyControlMaxSpeed + cnt;
+//
+//                                    yaw = yawJoyControlMaxSpeed;
+//                                    throttle = verticalJoyControlMaxSpeed;
+//
+//                                    if (null == sendVirtualStickDataTimer) {
+//                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
+//                                        sendVirtualStickDataTimer = new Timer();
+//                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 1000);
+//                                    }
+//                                    cnt++;
+//                                }
+//                            }
+//                        }).start();
+//                    }
+//
+////                    @Override
+////                    public void onStart(OnScreenJoystick joystick) {
+////                        new Thread(new Runnable() {
+////                            @Override
+////                            public void run() {
+////                                Log.d("setJoystickListener", "onStart_run");
+////
+////                                int cnt = 0;
+////                                while (cnt < 5) {
+////                                    Log.d("onStart",String.valueOf(cnt));
+////                                    setResultToToast("cnt : " + String.valueOf(cnt));
+////
+////                                    float pitchJoyControlMaxSpeed = 10;
+////                                    float rollJoyControlMaxSpeed = 10;
+////
+////                                    pitch = pitchJoyControlMaxSpeed + cnt;
+////                                    roll = rollJoyControlMaxSpeed + cnt;
+////
+////                                    if (null == sendVirtualStickDataTimer) {
+////                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
+////                                        sendVirtualStickDataTimer = new Timer();
+////                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
+////                                    }
+////                                    cnt++;
+////                                }
+////                            }
+////                        }).start();
+////                    }
+//                });
+                //finished button tmp2
+                handler.postDelayed(runnable = new Runnable() {
+                    //update location of our drone every loadIntervals seconds.
                     @Override
-                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
+                    public void run() {
+                        handler.postDelayed(runnable, loadIntervals);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -267,50 +335,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     float pitchJoyControlMaxSpeed = 10;
                                     float rollJoyControlMaxSpeed = 10;
 
+                                    float yawJoyControlMaxSpeed = 0;
+                                    float verticalJoyControlMaxSpeed = 4;
+
                                     pitch = pitchJoyControlMaxSpeed + cnt;
                                     roll = rollJoyControlMaxSpeed + cnt;
+
+                                    yaw = yawJoyControlMaxSpeed;
+                                    throttle = verticalJoyControlMaxSpeed;
 
                                     if (null == sendVirtualStickDataTimer) {
                                         sendVirtualStickDataTask = new SendVirtualStickDataTask();
                                         sendVirtualStickDataTimer = new Timer();
-                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
+                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 1000);
                                     }
                                     cnt++;
                                 }
                             }
                         }).start();
                     }
+                }, loadIntervals);
 
-//                    @Override
-//                    public void onStart(OnScreenJoystick joystick) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                Log.d("setJoystickListener", "onStart_run");
-//
-//                                int cnt = 0;
-//                                while (cnt < 5) {
-//                                    Log.d("onStart",String.valueOf(cnt));
-//                                    setResultToToast("cnt : " + String.valueOf(cnt));
-//
-//                                    float pitchJoyControlMaxSpeed = 10;
-//                                    float rollJoyControlMaxSpeed = 10;
-//
-//                                    pitch = pitchJoyControlMaxSpeed + cnt;
-//                                    roll = rollJoyControlMaxSpeed + cnt;
-//
-//                                    if (null == sendVirtualStickDataTimer) {
-//                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
-//                                        sendVirtualStickDataTimer = new Timer();
-//                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
-//                                    }
-//                                    cnt++;
-//                                }
-//                            }
-//                        }).start();
-//                    }
-                });
-                //finished button tmp2
                 break;
             }
             default:
