@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LatLng initLocation;
 
-    private OnScreenJoystick vitualStick;
 
     private float pitch, roll, yaw, throttle;
 
@@ -128,8 +127,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBtnDisable = (Button) findViewById(R.id.btn_disable);
         mBtnStop = (Button) findViewById(R.id.btn_stop);
         mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
-
-        vitualStick = (OnScreenJoystick) findViewById(R.id.virtualStick);
 
         mBtnEnable.setOnClickListener(this);
         mBtnStart.setOnClickListener(this);
@@ -250,73 +247,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //start button tmp2
                 Log.d("onClick", "tmp2");
 
-                //Thread 사용해서 임의 값 업데이트 하기.
-//                vitualStick.setJoystickListener(new OnScreenJoystickListener() {
-//                    @Override
-//                    public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                Log.d("setJoystickListener", "onStart_run");
-//
-//                                int cnt = 0;
-//                                while (cnt < 5) {
-//                                    Log.d("onStart",String.valueOf(cnt));
-//                                    //setResultToToast("cnt : " + String.valueOf(cnt));
-//
-//                                    float pitchJoyControlMaxSpeed = 10;
-//                                    float rollJoyControlMaxSpeed = 10;
-//
-//                                    float yawJoyControlMaxSpeed = 0;
-//                                    float verticalJoyControlMaxSpeed = 4;
-//
-//                                    pitch = pitchJoyControlMaxSpeed + cnt;
-//                                    roll = rollJoyControlMaxSpeed + cnt;
-//
-//                                    yaw = yawJoyControlMaxSpeed;
-//                                    throttle = verticalJoyControlMaxSpeed;
-//
-//                                    if (null == sendVirtualStickDataTimer) {
-//                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
-//                                        sendVirtualStickDataTimer = new Timer();
-//                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 1000);
-//                                    }
-//                                    cnt++;
-//                                }
-//                            }
-//                        }).start();
-//                    }
-//
-////                    @Override
-////                    public void onStart(OnScreenJoystick joystick) {
-////                        new Thread(new Runnable() {
-////                            @Override
-////                            public void run() {
-////                                Log.d("setJoystickListener", "onStart_run");
-////
-////                                int cnt = 0;
-////                                while (cnt < 5) {
-////                                    Log.d("onStart",String.valueOf(cnt));
-////                                    setResultToToast("cnt : " + String.valueOf(cnt));
-////
-////                                    float pitchJoyControlMaxSpeed = 10;
-////                                    float rollJoyControlMaxSpeed = 10;
-////
-////                                    pitch = pitchJoyControlMaxSpeed + cnt;
-////                                    roll = rollJoyControlMaxSpeed + cnt;
-////
-////                                    if (null == sendVirtualStickDataTimer) {
-////                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
-////                                        sendVirtualStickDataTimer = new Timer();
-////                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
-////                                    }
-////                                    cnt++;
-////                                }
-////                            }
-////                        }).start();
-////                    }
-//                });
-                //finished button tmp2
                 handler.postDelayed(runnable = new Runnable() {
                     //update location of our drone every loadIntervals seconds.
                     @Override
@@ -343,6 +273,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                     yaw = yawJoyControlMaxSpeed;
                                     throttle = verticalJoyControlMaxSpeed;
+
+                                    String strTSPI = "Pitch : " + String.valueOf(pitch) +"Roll : " + String.valueOf(roll)
+                                                        + "Yaw : " +  String.valueOf(yaw) + "Throttle : " +  String.valueOf(throttle);
+
+                                    Log.d("TrajectoryTSPI",strTSPI);
 
                                     if (null == sendVirtualStickDataTimer) {
                                         sendVirtualStickDataTask = new SendVirtualStickDataTask();
