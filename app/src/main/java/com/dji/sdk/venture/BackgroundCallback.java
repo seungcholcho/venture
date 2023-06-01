@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import java.util.Calendar;
 import java.util.Date;
 
+import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.FlightMode;
 import dji.common.flightcontroller.LocationCoordinate3D;
@@ -21,6 +22,15 @@ public class BackgroundCallback extends Thread {
    private double Altitude;
    private double Latitude;
    private double Longitude;
+
+    private double pitch;
+    private double yaw;
+    private double roll;
+
+    private double vX;
+    private double vY;
+    private double vZ;
+    private double xXYZ;
    protected FlightMode flightState = null;
 
     public BackgroundCallback(TSPI mTSPI, FlightController mflightController) {
@@ -50,7 +60,18 @@ public class BackgroundCallback extends Thread {
                     Longitude = locationCoordinate3D.getLongitude();
                     flightState = djiFlightControllerCurrentState.getFlightMode();
 
-                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,flightState);
+                    vX = djiFlightControllerCurrentState.getVelocityX();
+                    vY = djiFlightControllerCurrentState.getVelocityY();
+                    vZ = djiFlightControllerCurrentState.getVelocityZ();
+                    xXYZ = (float) Math.sqrt((vX*vX) + (vY*vY) + (vZ*vZ));
+
+                    Attitude attitude = djiFlightControllerCurrentState.getAttitude();
+
+                    pitch = attitude.pitch;
+                    yaw = attitude.yaw;
+                    roll = attitude.roll;
+
+                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,pitch,yaw,roll,vX,vY,vZ,xXYZ,flightState);
                 }
             });
         }

@@ -32,6 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,11 +76,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Button mBtntmp2, mBtnStart, mBtnStop, mBtnDisable,mBtnEnable, mBtntmp1;
-    private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery;
+    private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextTmp;
 
     private String currentLocation;
     private String targetLocation;
     private String flightStates;
+
+    private String VirtualState;
+
+    private String GimbalState;
 
     private double currentLatitude = 0;
     private double currentLongitude = 0;
@@ -104,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LatLng initLocation;
 
-
     private float pitch, roll, yaw, throttle;
 
     private Timer sendVirtualStickDataTimer;
@@ -119,6 +123,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTextCLocation = (TextView) findViewById(R.id.text_current_location);
         mTextTLocation = (TextView) findViewById(R.id.text_target_location);
         mTextDistance = (TextView) findViewById(R.id.text_distance);
+
+        mTextState = (TextView) findViewById(R.id.text_tmp1);
+        mTextVirtualState = (TextView) findViewById(R.id.text_tmp2);
+        mTextTmp = (TextView) findViewById(R.id.text_tmp3);
 
         mBtnEnable = (Button) findViewById(R.id.btn_enable);
         mBtnStart = (Button) findViewById(R.id.btn_start);
@@ -188,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void run() {
                                 int cnt = 0;
-                                while (cnt < 5) {
+                                while (cnt < 100) {
 
                                     targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
                                     targetLongitude = targetLongitude * 1;
@@ -260,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 int cnt = 0;
                                 while (cnt < 5) {
                                     Log.d("onStart",String.valueOf(cnt));
-                                    setResultToToast("cnt : " + String.valueOf(cnt));
+                                    //setResultToToast("cnt : " + String.valueOf(cnt));
 
                                     float pitchJoyControlMaxSpeed = 10;
                                     float rollJoyControlMaxSpeed = 10;
@@ -278,6 +286,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                         + "Yaw : " +  String.valueOf(yaw) + "Throttle : " +  String.valueOf(throttle);
 
                                     Log.d("TrajectoryTSPI",strTSPI);
+
+                                    String strVelocity = "X : " + String.valueOf(defensiveTSPI.getvX()) + "Y: " + String.valueOf(defensiveTSPI.getvY())
+                                            + "Z: " + String.valueOf(defensiveTSPI.getvZ()) + "XYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+
+                                    Log.d("Velocity", strVelocity);
 
                                     if (null == sendVirtualStickDataTimer) {
                                         sendVirtualStickDataTask = new SendVirtualStickDataTask();
@@ -470,6 +483,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName()
                                 + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
                         mTextDistance.setText(flightStates);
+
+                        GimbalState = "GimbalState\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) + "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) + "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+                        mTextState.setText(GimbalState);
+
+                        VirtualState = "VirtualState\n Pitch : " + String.valueOf(pitch) + "\nYaw : " + String.valueOf(yaw) + "\nRoll : " + String.valueOf(roll) + "\nThrottle : " + String.valueOf(throttle);
+                        mTextVirtualState.setText(VirtualState);
+
                     }
                 });
             }
