@@ -61,10 +61,11 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 //Test
 // implemts 뒤에 GoogleMap.OnMapClickListener 추가
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener {
     Handler handler = new Handler();
     Runnable runnable;
     int loadIntervals = 1000; //in ms. 1000ms = 1s
+    int refreshTargetIntervals = 5000; //Refresh time to target input
 
     FlightController flightController;
 
@@ -72,30 +73,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     TSPI maliciousTSPI;
 
+    InputData inputData;
+
     BackgroundCallback updateTSPI;
 
+    SendInputData sendInputData;
+
     private GoogleMap mMap;
-    private Button mBtntmp2, mBtnStart, mBtnStop, mBtnDisable,mBtnEnable, mBtntmp1;
+    private Button mBtnStart, mBtnStop, mBtnDisable, mBtnEnable,
+            mBtntmp1,mBtntmp2,mBtntmp3,mBtntmp4,mBtntmp5,mBtntmp6,mBtntmp7;
     private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextTmp;
 
     private String currentLocation;
     private String targetLocation;
     private String flightStates;
-
     private String VirtualState;
-
     private String GimbalState;
-
     private double currentLatitude = 0;
     private double currentLongitude = 0;
-
     private double targetLatitude = 0;
     private double targetLongitude = 0;
-
-    private static final double ONE_METER_OFFSET = 0.000009005520;
-    //0.00000899322;
-
-    private static final double ONE_METER_OFFSET_LON = 0.00000899322;
 
     private Marker droneMarker = null;
 
@@ -106,8 +103,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<LatLng> pathPoints = new ArrayList<>();
 
     private FirebaseFirestore db;
-
-    private LatLng initLocation;
 
     private float pitch, roll, yaw, throttle;
 
@@ -129,20 +124,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTextTmp = (TextView) findViewById(R.id.text_tmp3);
 
         mBtnEnable = (Button) findViewById(R.id.btn_enable);
-        mBtnStart = (Button) findViewById(R.id.btn_start);
-        mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
-
         mBtnDisable = (Button) findViewById(R.id.btn_disable);
-        mBtnStop = (Button) findViewById(R.id.btn_stop);
+
+        mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
         mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
+        mBtntmp3 = (Button) findViewById(R.id.btn_tmp3);
+        mBtntmp4 = (Button) findViewById(R.id.btn_tmp4);
+        mBtntmp5 = (Button) findViewById(R.id.btn_tmp5);
+        mBtntmp6 = (Button) findViewById(R.id.btn_tmp6);
+        mBtntmp7 = (Button) findViewById(R.id.btn_tmp7);
 
         mBtnEnable.setOnClickListener(this);
-        mBtnStart.setOnClickListener(this);
-        mBtntmp1.setOnClickListener(this);
-
         mBtnDisable.setOnClickListener(this);
-        mBtnStop.setOnClickListener(this);
+
+        mBtntmp1.setOnClickListener(this);
         mBtntmp2.setOnClickListener(this);
+        mBtntmp3.setOnClickListener(this);
+        mBtntmp4.setOnClickListener(this);
+        mBtntmp5.setOnClickListener(this);
+        mBtntmp6.setOnClickListener(this);
+        mBtntmp7.setOnClickListener(this);
     }
 
     @Override
@@ -171,139 +172,201 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 break;
             }
-            case R.id.btn_start: {
-                //showToast("onClickStart");
-                Log.d("onClick", "start");
-                //showToast("Mission Start");
-
-                targetLatitude = defensiveTSPI.getLatitude();
-                targetLongitude = defensiveTSPI.getLongitude();
-
-                double tmp = maliciousTSPI.getLatitude();
-
-                //showToast(String.valueOf(followMeMissionOperator.getCurrentState()));
-
-                Log.d("MissionStart","before Mission start");
-                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
-                        currentLatitude + 1 * ONE_METER_OFFSET, currentLongitude, 30f
-                ), new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        Log.d("MissionStart", "Mission Start");
-
-                        //ToDo Thread 객체화 하기(OnPause, Stop.onClickListener Thread.interrupt 넣기)
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                int cnt = 0;
-                                while (cnt < 100) {
-
-                                    targetLatitude = targetLatitude + 1 * ONE_METER_OFFSET;
-                                    targetLongitude = targetLongitude * 1;
-
-                                    LocationCoordinate2D newLocation = new LocationCoordinate2D(targetLatitude, targetLongitude);
-
-                                    followMeMissionOperator.updateFollowingTarget(newLocation, djiError1 -> {
-                                        try {
-                                            //Thread sleep 1/1000
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                                    cnt++;
-                                }
-                                //showToast("Mission Ended");
-                            }
-                        }).start();
-                    }
-                });
-                break;
-            }
-            case R.id.btn_stop: {
-                Log.d("onClick", "stop");
-                followMeMissionOperator.stopMission(djiError -> showToast("Mission Stop"));
-                break;
-            }
             case R.id.btn_tmp1: {
-                Log.d("onClick", "start");
+                //직진
+                Log.d("onClick", "tmp1");
 
-                //위도 경도 위치 확인하기
-                targetLatitude = 40.2248041984068;
-                targetLongitude = -87.002733014605;
-
-                double tmp = maliciousTSPI.getLatitude();
-
-                followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,currentLatitude,currentLongitude,30f
-                ), new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        Log.d("MissionStart", "Mission Start");
-
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //showToast("onResult in Thread run");
-
-                            }
-                        }).start();
-                    }
-                });
-                break;
-            }
-            case R.id.btn_tmp2: {
-                //start button tmp2
-                Log.d("onClick", "tmp2");
-
+                //이런 식으로 코딩하면 쓰레드가 계속 만들어져서 UI가 멈추는거 같음
+                //아마 이거 해결할라면 동기화하는 코드 안에서 쓰레드를 만드는 것이 아닌 백그라운드에서 쓰레드 하나만들고 만들어진 쓰레드를 계속 사용해야할 듯?
+                //내일 테스트해보면서 확인해보자
                 handler.postDelayed(runnable = new Runnable() {
-                    //update location of our drone every loadIntervals seconds.
                     @Override
                     public void run() {
                         handler.postDelayed(runnable, loadIntervals);
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                Log.d("setJoystickListener", "onStart_run");
 
-                                int cnt = 0;
-                                while (cnt < 5) {
-                                    Log.d("onStart",String.valueOf(cnt));
-                                    //setResultToToast("cnt : " + String.valueOf(cnt));
+                                //드론이 입력 값에 따라 상대적으로 움직인다는 가정하에 작성함.
+                                //5초에 한번씩 동기화되면서 드론이 1m/s로 직진해야함.
+                                inputData.addPitch(1);
 
-                                    float pitchJoyControlMaxSpeed = 10;
-                                    float rollJoyControlMaxSpeed = 10;
+                                String strTSPI = "Pitch : " + String.valueOf(inputData.getPitch()) + "Roll : " + String.valueOf(inputData.getRoll())
+                                        + "Yaw : " + String.valueOf(inputData.getYaw()) + "Throttle : " + String.valueOf(inputData.getThrottle());
 
-                                    float yawJoyControlMaxSpeed = 0;
-                                    float verticalJoyControlMaxSpeed = 4;
+                                Log.d("InputData", strTSPI);
 
-                                    pitch = pitchJoyControlMaxSpeed + cnt;
-                                    roll = rollJoyControlMaxSpeed + cnt;
+                                String strVelocity = "Pitch : " + String.valueOf(defensiveTSPI.getPitch()) + "Roll: " + String.valueOf(defensiveTSPI.getRoll())
+                                        + "Yaw: " + String.valueOf(defensiveTSPI.getYaw());
 
-                                    yaw = yawJoyControlMaxSpeed;
-                                    throttle = verticalJoyControlMaxSpeed;
+                                Log.d("DroneTSPI", strVelocity);
 
-                                    String strTSPI = "Pitch : " + String.valueOf(pitch) +"Roll : " + String.valueOf(roll)
-                                                        + "Yaw : " +  String.valueOf(yaw) + "Throttle : " +  String.valueOf(throttle);
+                                flightController.sendVirtualStickFlightControlData(
+                                        new FlightControlData(inputData.getPitch(), inputData.getRoll(), inputData.getYaw(), inputData.getThrottle()),
+                                        new CommonCallbacks.CompletionCallback() {
+                                    @Override
+                                    public void onResult(DJIError djiError) {
+                                        Log.d("onResult","Succeed input data into virtual stick");
 
-                                    Log.d("TrajectoryTSPI",strTSPI);
-
-                                    String strVelocity = "X : " + String.valueOf(defensiveTSPI.getvX()) + "Y: " + String.valueOf(defensiveTSPI.getvY())
-                                            + "Z: " + String.valueOf(defensiveTSPI.getvZ()) + "XYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-
-                                    Log.d("Velocity", strVelocity);
-
-                                    if (null == sendVirtualStickDataTimer) {
-                                        sendVirtualStickDataTask = new SendVirtualStickDataTask();
-                                        sendVirtualStickDataTimer = new Timer();
-                                        sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 1000);
                                     }
-                                    cnt++;
-                                }
+                                });
+
                             }
                         }).start();
                     }
-                }, loadIntervals);
+                }, refreshTargetIntervals);
+                break;
+            }
+            case R.id.btn_tmp2: {
+                //우(횡) 이동
+                Log.d("onClick", "tmp2");
 
+                handler.postDelayed(runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.postDelayed(runnable, loadIntervals);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                inputData.addYaw(1);
+
+                                String strTSPI = "Pitch : " + String.valueOf(inputData.getPitch()) + "Roll : " + String.valueOf(inputData.getRoll())
+                                        + "Yaw : " + String.valueOf(inputData.getYaw()) + "Throttle : " + String.valueOf(inputData.getThrottle());
+
+                                Log.d("InputData", strTSPI);
+
+                                String strVelocity = "Pitch : " + String.valueOf(defensiveTSPI.getPitch()) + "Roll: " + String.valueOf(defensiveTSPI.getRoll())
+                                        + "Yaw: " + String.valueOf(defensiveTSPI.getYaw());
+
+                                Log.d("DroneTSPI", strVelocity);
+
+                                flightController.sendVirtualStickFlightControlData(
+                                        new FlightControlData(inputData.getPitch(), inputData.getRoll(), inputData.getYaw(), inputData.getThrottle()),
+                                        new CommonCallbacks.CompletionCallback() {
+                                            @Override
+                                            public void onResult(DJIError djiError) {
+                                                Log.d("onResult","Succeed input data into virtual stick");
+
+                                            }
+                                        });
+
+                            }
+                        }).start();
+                    }
+                }, refreshTargetIntervals);
+
+                break;
+            }
+            case R.id.btn_tmp3: {
+                // 제자리에서 오른쪽으로 회전
+                Log.d("onClick", "tmp3");
+
+                handler.postDelayed(runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.postDelayed(runnable, loadIntervals);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                inputData.addRoll(1);
+
+                                String strTSPI = "Pitch : " + String.valueOf(inputData.getPitch()) + "Roll : " + String.valueOf(inputData.getRoll())
+                                        + "Yaw : " + String.valueOf(inputData.getYaw()) + "Throttle : " + String.valueOf(inputData.getThrottle());
+
+                                Log.d("InputData", strTSPI);
+
+                                String strVelocity = "Pitch : " + String.valueOf(defensiveTSPI.getPitch()) + "Roll: " + String.valueOf(defensiveTSPI.getRoll())
+                                        + "Yaw: " + String.valueOf(defensiveTSPI.getYaw());
+
+                                Log.d("DroneTSPI", strVelocity);
+
+                                flightController.sendVirtualStickFlightControlData(
+                                        new FlightControlData(inputData.getPitch(), inputData.getRoll(), inputData.getYaw(), inputData.getThrottle()),
+                                        new CommonCallbacks.CompletionCallback() {
+                                            @Override
+                                            public void onResult(DJIError djiError) {
+                                                Log.d("onResult","Succeed input data into virtual stick");
+
+                                            }
+                                        });
+
+                            }
+                        }).start();
+                    }
+                }, refreshTargetIntervals);
+
+
+                break;
+            }
+            case R.id.btn_tmp4: {
+                // 고도 상승
+                Log.d("onClick", "tmp4");
+
+                handler.postDelayed(runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.postDelayed(runnable, loadIntervals);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                inputData.addThrottle(1);
+
+                                String strTSPI = "Pitch : " + String.valueOf(inputData.getPitch()) + "Roll : " + String.valueOf(inputData.getRoll())
+                                        + "Yaw : " + String.valueOf(inputData.getYaw()) + "Throttle : " + String.valueOf(inputData.getThrottle());
+
+                                Log.d("InputData", strTSPI);
+
+                                String strVelocity = "Pitch : " + String.valueOf(defensiveTSPI.getPitch()) + "Roll: " + String.valueOf(defensiveTSPI.getRoll())
+                                        + "Yaw: " + String.valueOf(defensiveTSPI.getYaw());
+
+                                Log.d("DroneTSPI", strVelocity);
+
+                                flightController.sendVirtualStickFlightControlData(
+                                        new FlightControlData(inputData.getPitch(), inputData.getRoll(), inputData.getYaw(), inputData.getThrottle()),
+                                        new CommonCallbacks.CompletionCallback() {
+                                            @Override
+                                            public void onResult(DJIError djiError) {
+                                                Log.d("onResult","Succeed input data into virtual stick");
+
+                                            }
+                                        });
+
+                            }
+                        }).start();
+                    }
+                }, refreshTargetIntervals);
+
+                break;
+            }
+            case R.id.btn_tmp5: {
+                Log.d("onClick", "tmp5");
+
+                //이 코드가 잘되면 이걸로 계속 실행하면 될 둣?
+
+                handler.postDelayed(runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.postDelayed(runnable, loadIntervals);
+
+                        //5초동안 1m/s로 전진
+
+                        inputData.addPitch(1);
+
+                        sendInputData.send();
+
+                    }
+                }, refreshTargetIntervals);
+
+                break;
+            }
+            case R.id.btn_tmp6: {
+                Log.d("onClick", "tmp6");
+                break;
+            }
+            case R.id.btn_tmp7: {
+                Log.d("onClick", "tmp");
                 break;
             }
             default:
@@ -314,6 +377,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private class SendVirtualStickDataTask extends TimerTask {
         @Override
         public void run() {
+
+            Log.d("SendVirtaulStickDataTask","run");
+
             if (flightController != null) {
                 flightController.sendVirtualStickFlightControlData(new FlightControlData(roll, pitch, yaw, throttle), new CommonCallbacks.CompletionCallback() {
                     @Override
@@ -354,10 +420,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         defensiveTSPI = new TSPI();
         maliciousTSPI = new TSPI();
 
+        inputData = new InputData(0,0,0,0);
+
         try {
             flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
             updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
             updateTSPI.start();
+
+            sendInputData = new SendInputData(inputData, flightController);
+            sendInputData.start();
 
             //최대 고도 제한
             flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
@@ -373,24 +444,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
 
-            //followMeMissionOpertor 객체 주입
-            followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
-
-            //folloMeMission Listener 활성화
-            setUpListener();
-
-
             //flight 상태 + Mission 상태 출력
             flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName()
                     + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
             mTextDistance.setText(flightStates);
 
             //Virtual Stick
+            //속도
             flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            //속도
             flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+            //각도
             flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+            //드론 기준 수평되는지
             flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-
 
 
         } catch (Exception e) {
@@ -425,6 +492,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //update location of our drone every loadIntervals seconds.
             @Override
             public void run() {
+                // Connection DB code
 //                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
 //                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 //                            @Override
@@ -462,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                            }
 //                        });
 
-                handler.postDelayed(runnable, loadIntervals);
+                handler.postDelayed(runnable, refreshTargetIntervals);
 
                 //Mark on map in real time
                 //updateDroneLocation();
@@ -476,8 +544,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mTextCLocation.setText(currentLocation);
 
 //                        targetLocation = "Lat : " + String.valueOf(targetLatitude) + "\nLon : " + String.valueOf(targetLongitude);
-                        targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
-                        mTextTLocation.setText(targetLocation);
+//                        targetLocation = "Lat : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLatitude()) + "\nLon : " + String.valueOf(followMeMissionOperator.getFollowingTarget().getLongitude());
+//                        mTextTLocation.setText(targetLocation);
 
                         //Distance target to Current value
                         flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nMission state : " + followMeMissionOperator.getCurrentState().getName()
@@ -493,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
             }
-        }, loadIntervals);
+        }, refreshTargetIntervals);
     }
 
     public void onReturn(View view) {
@@ -575,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         //malicious Marker
-        LatLng malPosition = new LatLng(maliciousTSPI.getLatitude(),maliciousTSPI.getLongitude());
+        LatLng malPosition = new LatLng(maliciousTSPI.getLatitude(), maliciousTSPI.getLongitude());
 
         final MarkerOptions markerMal = new MarkerOptions();
         markerMal.position(malPosition);
@@ -611,7 +679,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onExecutionUpdate(@NonNull @NotNull FollowMeMissionEvent followMeMissionEvent) {
                 // Example of Execution Listener
                 showToast("Update in listener");
-                Log.d("onExcutionUpdate","onExcutionUpdate");
+                Log.d("onExcutionUpdate", "onExcutionUpdate");
 
 //                Log.d("FollowMeMissionListener Active",
 //                        (followMeMissionEvent.getPreviousState() == null
@@ -628,14 +696,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onExecutionStart() {
-                Log.d("setuplistener" , "onExecutionStart");
+                Log.d("setuplistener", "onExecutionStart");
                 //showToast("Mission started");
                 //updateFollowMeMissionState();
             }
 
             @Override
             public void onExecutionFinish(@Nullable @org.jetbrains.annotations.Nullable DJIError djiError) {
-                Log.d("setuplistener" , "onExecutionFinish");
+                Log.d("setuplistener", "onExecutionFinish");
                 //showToast("Mission finished");
                 //updateFollowMeMissionState();
             }

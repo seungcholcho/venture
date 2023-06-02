@@ -1,7 +1,5 @@
 package com.dji.sdk.venture;
 
-import android.util.Log;
-
 import java.util.Date;
 
 import dji.common.flightcontroller.FlightMode;

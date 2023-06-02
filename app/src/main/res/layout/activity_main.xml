@@ -136,18 +136,18 @@
             android:text="Enable Virtual Stick" />
 
         <Button
-            android:id="@+id/btn_start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Start Mission" />
-
-        <Button
             android:id="@+id/btn_tmp1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="tmp1" />
+
+        <Button
+            android:id="@+id/btn_tmp2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="tmp2" />
     </LinearLayout>
 
     <LinearLayout
@@ -169,18 +169,51 @@
             android:text="Disable Virtual Stick" />
 
         <Button
-            android:id="@+id/btn_stop"
+            android:id="@+id/btn_tmp3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Stop Mission" />
+            android:text="tmp3" />
 
         <Button
-            android:id="@+id/btn_tmp2"
+            android:id="@+id/btn_tmp4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Tmp2" />
+            android:text="Tmp4" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout5"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
+        app:layout_constraintVertical_bias="0.15">
+
+        <Button
+            android:id="@+id/btn_tmp5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="tmp5" />
+
+        <Button
+            android:id="@+id/btn_tmp6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="tmp6" />
+
+        <Button
+            android:id="@+id/btn_tmp7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tmp7" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
