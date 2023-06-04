@@ -213,7 +213,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Tmp7" />
+            android:text="Init" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

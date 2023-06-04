@@ -34,7 +34,6 @@ public class SendInputData extends Thread {
     }
 
     public void send() {
-
         Log.d("SendInputData", "Start send");
 
         flightController.sendVirtualStickFlightControlData(
