@@ -24,6 +24,8 @@ public class BackgroundVirtualStick extends TimerTask {
 
     Handler mainHandler;
 
+    //승철 화이팅
+
     public BackgroundVirtualStick(FlightController mflightController) {
         this.pitch = (float) 2;
         this.roll = 0;
