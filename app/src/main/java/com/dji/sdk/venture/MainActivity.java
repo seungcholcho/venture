@@ -61,11 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     TSPI maliciousTSPI;
 
-    InputData inputData;
-
     BackgroundCallback updateTSPI;
-
-    SendInputData sendInputData;
 
     private GoogleMap mMap;
     private Button mBtnStart, mBtnStop, mBtnDisable, mBtnEnable,
@@ -83,10 +79,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double targetLongitude = 0;
 
     private Marker droneMarker = null;
-
-    private FollowMeMissionOperator followMeMissionOperator = null;
-
-    private FollowMeMissionOperatorListener listener;
 
     List<LatLng> pathPoints = new ArrayList<>();
 
@@ -163,8 +155,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("onClick", "tmp1");
 
                 sendDataTimer = new Timer();
-                //1초후 backgroundVirtualStick이 2초에 한번씩 실행
-                sendDataTimer.schedule(backgroundVirtualStick,500,1000);
+                //Test1
+                //Pitch, Roll, Yaw, Throttler 값들의 임계값 찾기.
+                //0.5초후 backgroundVirtualStick이 2초에 한번씩 실행
+                //sendDataTimer.schedule(backgroundVirtualStick,500,1000);
+
+                //Test2
+                //Sample Code주기랑 똑같이 설정해서 끊기는 현상 해결해보기.
+                sendDataTimer.schedule(backgroundVirtualStick,100,200);
 
                 break;
             }
@@ -295,86 +293,86 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        handler.postDelayed(runnable = new Runnable() {
-            //update location of our drone every loadIntervals seconds.
-            @Override
-            public void run() {
-                // Connection DB code
-//                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                                if (task.isSuccessful()) {
+//        handler.postDelayed(runnable = new Runnable() {
+//            //update location of our drone every loadIntervals seconds.
+//            @Override
+//            public void run() {
+//                // Connection DB code
+////                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+////                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+////                            @Override
+////                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+////                                if (task.isSuccessful()) {
+////
+////                                    int i = 0;
+////                                    for (QueryDocumentSnapshot document : task.getResult()) {
+////
+////                                        //showToast(String.valueOf(document.getData()));
+////
+////                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+////                                        //Date Timestamp = changeUnixTime(Time);
+////                                        String GpsSignal = (String) document.getData().get("GpsSignal");
+////                                        double Altitude = (double) document.getData().get("Altitude");
+////                                        double Latitude = (double) document.getData().get("Latitude");
+////                                        double Longitude = (double) document.getData().get("Longitude");
+////
+////                                        Log.d("Firebase","Time : " + String.valueOf(document.getData().get("Time")));
+////                                        Log.d("Firebase","GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+////                                        Log.d("Firebase","Altitude : " + String.valueOf(document.getData().get("Altitude")));
+////                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
+////                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
+////
+////                                        maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
+////
+////                                        i++;
+////                                        if (i == 1){
+////                                            break;
+////                                        }
+////                                    }
+////                                } else {
+////                                    Log.w(TAG, "Error getting documents.", task.getException());
+////                                }
+////                            }
+////                        });
 //
-//                                    int i = 0;
-//                                    for (QueryDocumentSnapshot document : task.getResult()) {
+//                handler.postDelayed(runnable, loadIntervals);
 //
-//                                        //showToast(String.valueOf(document.getData()));
+//                //Mark on map in real time
+//                //updateDroneLocation();
 //
-//                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-//                                        //Date Timestamp = changeUnixTime(Time);
-//                                        String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                        double Altitude = (double) document.getData().get("Altitude");
-//                                        double Latitude = (double) document.getData().get("Latitude");
-//                                        double Longitude = (double) document.getData().get("Longitude");
+//                //Change Textview
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
 //
-//                                        Log.d("Firebase","Time : " + String.valueOf(document.getData().get("Time")));
-//                                        Log.d("Firebase","GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-//                                        Log.d("Firebase","Altitude : " + String.valueOf(document.getData().get("Altitude")));
-//                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+//                                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
+//                        mTextCLocation.setText(currentLocation);
 //
-//                                        maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
+//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
+//                                        "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+//                        mTextDistance.setText(flightStates);
 //
-//                                        i++;
-//                                        if (i == 1){
-//                                            break;
-//                                        }
-//                                    }
-//                                } else {
-//                                    Log.w(TAG, "Error getting documents.", task.getException());
-//                                }
-//                            }
-//                        });
-
-                handler.postDelayed(runnable, loadIntervals);
-
-                //Mark on map in real time
-                //updateDroneLocation();
-
-                //Change Textview
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
-                                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-                        mTextCLocation.setText(currentLocation);
-
-                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
-                                        "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-                        mTextDistance.setText(flightStates);
-
-                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
-                                        "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
-                                        "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
-                        mTextState.setText(TSPIState);
-
-                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
-                                        "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
-                                        "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
-                                        "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
-                        mTextVirtualState.setText(InputDataState);
-
-                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-                        mTextVelocity.setText(Velocity);
-
-
-                    }
-                });
-            }
-        }, loadIntervals);
+//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
+//                                        "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
+//                                        "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+//                        mTextState.setText(TSPIState);
+//
+//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
+//                                        "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
+//                                        "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
+//                                        "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
+//                        mTextVirtualState.setText(InputDataState);
+//
+//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+//                        mTextVelocity.setText(Velocity);
+//
+//
+//                    }
+//                });
+//            }
+//        }, loadIntervals);
     }
 
     public void onReturn(View view) {
