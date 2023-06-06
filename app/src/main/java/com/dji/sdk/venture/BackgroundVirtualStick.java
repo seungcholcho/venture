@@ -60,8 +60,8 @@ public class BackgroundVirtualStick extends TimerTask {
         this.yaw = -179;
         this.targetYaw = 0;
         this.throttle = 0;
-        this.temp = (float) 1;
-        this.temp2 = (float) 1;
+        this.temp = (float) 0.3;
+        this.temp2 = (float) 0.3;
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.flightController = mflightController;
         this.defTSPI = defTSPI;
@@ -185,7 +185,7 @@ public class BackgroundVirtualStick extends TimerTask {
         else{
             Log.d("PosPred","queue empty!");
         }
-
+        setYaw(targetYaw);
 //        if (getYaw()<180){
 //            setYaw(this.yaw + temp);
 //            temp = temp + (float) 1;
@@ -220,7 +220,6 @@ public class BackgroundVirtualStick extends TimerTask {
 //        setPitch(this.pitch + temp);
 //        if (getPitch() > 4 || getPitch() < -4)
 //            temp = temp* -1;
-
     }
 
     public void send() {

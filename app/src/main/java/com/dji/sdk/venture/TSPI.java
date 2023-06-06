@@ -67,7 +67,6 @@ public class TSPI {
     }
 
     public void appendLatLonToQueue(double lat, double lon){
-        Log.d("appending", "appending");
         latQueue.insert(lat);
         lonQueue.insert(lon);
     }
