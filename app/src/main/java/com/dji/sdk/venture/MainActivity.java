@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -26,16 +27,23 @@ import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import dji.common.error.DJIError;
+import dji.common.flightcontroller.virtualstick.FlightControlData;
 import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
 import dji.common.flightcontroller.virtualstick.VerticalControlMode;
@@ -65,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Button mBtnStart, mBtnStop, mBtnDisable, mBtnEnable,
-            mBtntmp1,mBtntmp2,mBtntmp3,mBtntmp4,mBtntmp5,mBtntmp6,mBtntmp7;
+            mBtntmp1, mBtntmp2, mBtntmp3, mBtntmp4, mBtntmp5, mBtntmp6, mBtntmp7;
     private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextVelocity;
 
     private String currentLocation;
@@ -87,6 +95,175 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Timer sendDataTimer;
 
     private BackgroundVirtualStick backgroundVirtualStick;
+    private SendVirtualStickDataTask sendVirtualStickDataTask;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        db = FirebaseFirestore.getInstance();
+        setContentView(R.layout.activity_main);
+
+        //권한허용
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+            if
+            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        1);
+            }
+        }
+
+        initUI();
+
+        //Display Map
+//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+//        mapFragment.getMapAsync(this);
+
+        defensiveTSPI = new TSPI();
+        maliciousTSPI = new TSPI();
+
+        try {
+            flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
+            updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
+            updateTSPI.start();
+
+            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController);
+            sendDataTimer = new Timer();
+            sendDataTimer.schedule(sendVirtualStickDataTask, 100, 200);
+
+            //최대 고도 제한
+            flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    Log.d("setFlightHeight", "Completed");
+                }
+            });
+
+            //최대 반경 제한
+            flightController.setMaxFlightRadius(500, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    Log.d("setFlightRadius", "Completed");
+                }
+            });
+
+            //flight 상태 + Mission 상태 출력
+            flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+            mTextDistance.setText(flightStates);
+
+            //Virtual Stick
+            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+            flightController.setYawControlMode(YawControlMode.ANGLE);
+            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+        } catch (Exception e) {
+            Log.d("FlightControllerState", "not Connected");
+        }
+
+        //현재위치 초기화
+        currentLatitude = defensiveTSPI.getLatitude();
+        currentLongitude = defensiveTSPI.getLongitude();
+
+        //pathPoint값 초기화
+//        initLocation = new LatLng(currentLatitude, currentLongitude);
+//
+//        pathPoints.add(initLocation);
+//        pathPoints.add(initLocation);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        handler.postDelayed(runnable = new Runnable() {
+//            //update location of our drone every loadIntervals seconds.
+//            @Override
+//            public void run() {
+//                // Connection DB code
+//                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                                if (task.isSuccessful()) {
+//
+//                                    int i = 0;
+//                                    for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                        //showToast(String.valueOf(document.getData()));
+//
+//                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+//                                        //Date Timestamp = changeUnixTime(Time);
+//                                        String GpsSignal = (String) document.getData().get("GpsSignal");
+//                                        double Altitude = (double) document.getData().get("Altitude");
+//                                        double Latitude = (double) document.getData().get("Latitude");
+//                                        double Longitude = (double) document.getData().get("Longitude");
+//
+//                                        Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+//                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+//                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+//                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//
+//                                        maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
+//
+//                                        i++;
+//                                        if (i == 1) {
+//                                            break;
+//                                        }
+//                                    }
+//                                } else {
+//                                    Log.w("Error", "Error getting documents.", task.getException());
+//                                }
+//                            }
+//                        });
+//
+//                handler.postDelayed(runnable, loadIntervals);
+//
+//                //Mark on map in real time
+//                //updateDroneLocation();
+//
+//                //Change Textview
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+//                                "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
+//                        mTextCLocation.setText(currentLocation);
+//
+//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
+//                                "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+//                        mTextDistance.setText(flightStates);
+//
+//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
+//                                "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
+//                                "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+//                        mTextState.setText(TSPIState);
+//
+//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
+//                                "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
+//                                "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
+//                                "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
+//                        mTextVirtualState.setText(InputDataState);
+//
+//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+//                        mTextVelocity.setText(Velocity);
+//
+//
+//                    }
+//                });
+//            }
+//        }, loadIntervals);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
     private void initUI() {
 
@@ -134,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onResult(DJIError djiError) {
                         flightController.setVirtualStickAdvancedModeEnabled(true);
+                        sendVirtualStickDataTask.setEnableVirtualStick(true);
                     }
                 });
 
@@ -145,6 +323,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
+                        flightController.setVirtualStickAdvancedModeEnabled(false);
+                        sendVirtualStickDataTask.setEnableVirtualStick(false);
                     }
                 });
 
@@ -153,17 +333,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.btn_tmp1: {
                 //직진
                 Log.d("onClick", "tmp1");
-
-                sendDataTimer = new Timer();
-                //Test1
-                //Pitch, Roll, Yaw, Throttler 값들의 임계값 찾기.
-                //0.5초후 backgroundVirtualStick이 2초에 한번씩 실행
-                //sendDataTimer.schedule(backgroundVirtualStick,500,1000);
-
-                //Test2
-                //Sample Code주기랑 똑같이 설정해서 끊기는 현상 해결해보기.
-                sendDataTimer.schedule(backgroundVirtualStick,100,200);
-
                 break;
             }
             case R.id.btn_tmp2: {
@@ -191,189 +360,223 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case R.id.btn_tmp7: {
                 Log.d("onClick", "tmp7");
-                //InputData 초기화
-                backgroundVirtualStick.UpdateInputData(0,0,0,0);
+                sendVirtualStickDataTask.UpdateInputData(0, 0, 0, 0);
             }
             default:
                 break;
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    private class SendVirtualStickDataTask extends TimerTask {
 
-        super.onCreate(savedInstanceState);
-//        db = FirebaseFirestore.getInstance();
-        setContentView(R.layout.activity_main);
+        private float pitch;
+        private float roll;
+        private float yaw;
+        private float throttle;
+        private float temp;
+        private boolean enableVirtualStick;
+        FlightController mflightController;
 
-        //권한허용
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            if
-            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        1);
+        //생성자
+        public SendVirtualStickDataTask(FlightController mflightController) {
+            this.pitch = (float) 2;
+            this.roll = 0;
+            this.yaw = -179;
+            this.throttle = 0;
+            this.temp = (float) 1;
+            this.enableVirtualStick = false;
+            this.mflightController = mflightController;
+        }
+
+        public void UpdateInputData(float pitch, float roll, float yaw, float throttle) {
+            this.pitch = pitch;
+            this.roll = roll;
+            this.yaw = yaw;
+            this.throttle = throttle;
+        }
+
+        public void setPitch(float pitch) {
+            this.pitch = pitch;
+        }
+
+        public void setRoll(float roll) {
+            this.roll = roll;
+        }
+
+        public void setYaw(float yaw) {
+            this.yaw = yaw;
+        }
+
+        public void setThrottle(float throttle) {
+            this.throttle = throttle;
+        }
+
+        public void setEnableVirtualStick(boolean enableVirtualStick) {
+            this.enableVirtualStick = enableVirtualStick;
+        }
+
+        public float getPitch() {
+            return this.pitch;
+        }
+
+        public float getRoll() {
+            return this.roll;
+        }
+
+        public float getYaw() {
+            return this.yaw;
+        }
+
+        public float getThrottle() {
+            return this.throttle;
+        }
+
+        public boolean getEnableVirtualStick() {
+            return this.enableVirtualStick;
+        }
+
+        @Override
+        public void run() {
+
+            long time = System.currentTimeMillis();
+            SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
+            String s = simpl.format(time);
+            Log.d("TaskLog", s);
+
+            // Connection DB code
+            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+
+                                int i = 0;
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                    //showToast(String.valueOf(document.getData()));
+
+                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+                                    //Date Timestamp = changeUnixTime(Time);
+                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+                                    double Altitude = (double) document.getData().get("Altitude");
+                                    double Latitude = (double) document.getData().get("Latitude");
+                                    double Longitude = (double) document.getData().get("Longitude");
+
+                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+
+                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
+
+                                    i++;
+                                    if (i == 1) {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                Log.w("Error", "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+
+            //UI 변경
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
+                    mTextCLocation.setText(currentLocation);
+
+                    targetLocation = "Lat : " + String.valueOf(maliciousTSPI.getLatitude()) + "\nLon : " + String.valueOf(maliciousTSPI.getLongitude());
+                    mTextTLocation.setText(targetLocation);
+
+                    flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
+                            "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+                    mTextDistance.setText(flightStates);
+
+                    TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
+                            "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
+                            "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+                    mTextState.setText(TSPIState);
+
+                    InputDataState = "Input Data State\n Pitch : " + String.valueOf(sendVirtualStickDataTask.getPitch()) +
+                            "\nYaw : " + String.valueOf(sendVirtualStickDataTask.getYaw()) +
+                            "\nRoll : " + String.valueOf(sendVirtualStickDataTask.getRoll()) +
+                            "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
+                    mTextVirtualState.setText(InputDataState);
+
+                    String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+                            + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+                    mTextVelocity.setText(Velocity);
+                }
+            });
+
+            if (getEnableVirtualStick()) {
+                calculateTSPI();
+                Log.d("TaskCalculate", String.valueOf(getPitch()));
+
+                send();
+                Log.d("TaskSend", "Succeed updated data");
             }
         }
 
-        initUI();
+        public void calculateTSPI() {
+            Log.d("calculateTSPI", "Run");
 
-        //Display Map
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
+            //예상 움직임
+//            후진 하강 -> 전진 상승 반복
 
-        defensiveTSPI = new TSPI();
-        maliciousTSPI = new TSPI();
+            setPitch(this.pitch + temp);
+            if (getPitch() > 4 || getPitch() < -4)
+                temp = temp * -1;
 
-        try {
-            flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-            updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
-            updateTSPI.start();
+            //예상 움직임
+            //하강 -> 승강 반복
+//        setThrottle(this.throttle + 1);
 
-            backgroundVirtualStick = new BackgroundVirtualStick(flightController);
+//        if(getThrottle()<15){
+//            setThrottle(getThrottle() + 5);
+//        }else if (getThrottle()==15){
+//            setThrottle(3);
+//        }
 
-            //최대 고도 제한
-            flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    Log.d("setFlightHeight","Completed");
-                }
-            });
+//        if (getThrottle() > 4 || getThrottle() < -4){
+//            Log.d("calculateTSPI","IF");
+//            setThrottle(-4);
+//        }
 
-            //최대 반경 제한
-            flightController.setMaxFlightRadius(500, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    Log.d("setFlightRadius","Completed");
-                }
-            });
+            //      예상 움직임
+//      0.2초마다 회전
+//        setYaw(this.yaw + (float) temp);
+//        if (getYaw() > 180 || getYaw() < -180)
+//            temp = temp* -1;
 
-            //flight 상태 + Mission 상태 출력
-            flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-            mTextDistance.setText(flightStates);
+            //예상 움직임
+            //후진 하강 -> 전진 상승 반복
+//        setPitch(this.pitch + temp);
+//        if (getPitch() > 4 || getPitch() < -4)
+//            temp = temp* -1;
 
-            //Virtual Stick
-            //속도
-            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-            //속도
-            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-            //각도
-            flightController.setYawControlMode(YawControlMode.ANGLE);
-            //드론 기준 수평되는지
-            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
 
-            Log.d("Controller Mode", "Test");
-            Log.d("Controller Mode" , String.valueOf(flightController.getVerticalControlMode()));
-            Log.d("Controller Mode" , String.valueOf(flightController.getRollPitchControlMode()));
-            Log.d("Controller Mode" , String.valueOf(flightController.getYawControlMode()));
-            Log.d("Controller Mode" , String.valueOf(flightController.getRollPitchCoordinateSystem()));
-
-        } catch (Exception e) {
-            Log.d("FlightControllerState", "not Connected");
         }
 
-        //현재위치 초기화
-        currentLatitude = defensiveTSPI.getLatitude();
-        currentLongitude = defensiveTSPI.getLongitude();
+        public void send() {
+            Log.d("SendInputData", "Start send");
 
-        //pathPoint값 초기화
-//        initLocation = new LatLng(currentLatitude, currentLongitude);
-//
-//        pathPoints.add(initLocation);
-//        pathPoints.add(initLocation);
+            this.mflightController.sendVirtualStickFlightControlData(
+                    new FlightControlData(getRoll(), getPitch(), getYaw(), getThrottle()),
+                    new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            Log.d("onResult", "Succeed input data into virtual stick");
+                        }
+                    });
+        }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        handler.postDelayed(runnable = new Runnable() {
-//            //update location of our drone every loadIntervals seconds.
-//            @Override
-//            public void run() {
-//                // Connection DB code
-////                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-////                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-////                            @Override
-////                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-////                                if (task.isSuccessful()) {
-////
-////                                    int i = 0;
-////                                    for (QueryDocumentSnapshot document : task.getResult()) {
-////
-////                                        //showToast(String.valueOf(document.getData()));
-////
-////                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-////                                        //Date Timestamp = changeUnixTime(Time);
-////                                        String GpsSignal = (String) document.getData().get("GpsSignal");
-////                                        double Altitude = (double) document.getData().get("Altitude");
-////                                        double Latitude = (double) document.getData().get("Latitude");
-////                                        double Longitude = (double) document.getData().get("Longitude");
-////
-////                                        Log.d("Firebase","Time : " + String.valueOf(document.getData().get("Time")));
-////                                        Log.d("Firebase","GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-////                                        Log.d("Firebase","Altitude : " + String.valueOf(document.getData().get("Altitude")));
-////                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
-////                                        Log.d("Firebase","Latitude : " + String.valueOf(document.getData().get("Latitude")));
-////
-////                                        maliciousTSPI.updateTSPIserver(GpsSignal,Altitude,Latitude,Longitude);
-////
-////                                        i++;
-////                                        if (i == 1){
-////                                            break;
-////                                        }
-////                                    }
-////                                } else {
-////                                    Log.w(TAG, "Error getting documents.", task.getException());
-////                                }
-////                            }
-////                        });
-//
-//                handler.postDelayed(runnable, loadIntervals);
-//
-//                //Mark on map in real time
-//                //updateDroneLocation();
-//
-//                //Change Textview
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
-//                                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-//                        mTextCLocation.setText(currentLocation);
-//
-//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
-//                                        "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-//                        mTextDistance.setText(flightStates);
-//
-//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
-//                                        "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
-//                                        "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
-//                        mTextState.setText(TSPIState);
-//
-//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
-//                                        "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
-//                                        "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
-//                                        "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
-//                        mTextVirtualState.setText(InputDataState);
-//
-//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-//                        mTextVelocity.setText(Velocity);
-//
-//
-//                    }
-//                });
-//            }
-//        }, loadIntervals);
-    }
 
     public void onReturn(View view) {
         this.finish();
@@ -535,4 +738,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onNothingSelected(AdapterView<?> parent) {
     }
 }
+
 
