@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="text_target_location"
-            android:textColor="@color/red"
+            android:textColor="@color/blue"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 

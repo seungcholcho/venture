@@ -257,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
 //                        mTextVelocity.setText(Velocity);
 //
-//
 //                    }
 //                });
 //            }
@@ -421,48 +420,52 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("TaskLog", s);
 
             // Connection DB code
-//            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            if (task.isSuccessful()) {
-//
-//                                int i = 0;
-//                                for (QueryDocumentSnapshot document : task.getResult()) {
-//
-//                                    //showToast(String.valueOf(document.getData()));
-//
-//                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-//                                    //Date Timestamp = changeUnixTime(Time);
-//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                    double Altitude = (double) document.getData().get("Altitude");
-//                                    double Latitude = (double) document.getData().get("Latitude");
-//                                    double Longitude = (double) document.getData().get("Longitude");
-//
-//                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-//                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-//                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//
-//                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-//
-//                                    i++;
-//                                    if (i == 1) {
-//                                        break;
-//                                    }
-//                                }
-//                            } else {
-//                                Log.w("Error", "Error getting documents.", task.getException());
-//                            }
-//                        }
-//                    });
+            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+
+                                int i = 0;
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                    //showToast(String.valueOf(document.getData()));
+
+                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+                                    //Date Timestamp = changeUnixTime(Time);
+                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+                                    double Altitude = (double) document.getData().get("Altitude");
+                                    double Latitude = (double) document.getData().get("Latitude");
+                                    double Longitude = (double) document.getData().get("Longitude");
+
+                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+
+                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
+
+                                    i++;
+                                    if (i == 1) {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                Log.w("Error", "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
 
 
             //UI 변경
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+
+                    //Mark on map in real time
+                    updateDroneLocation();
+
                     currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
                             "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
                     mTextCLocation.setText(currentLocation);
@@ -614,42 +617,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateDroneLocation() {
 
+        //defensive Drone Marker
         LatLng curPosition = new LatLng(defensiveTSPI.getLatitude(), defensiveTSPI.getLongitude());
 
-        final MarkerOptions markerOur = new MarkerOptions();
-        markerOur.position(curPosition);
-        markerOur.title("OurDrone");
-        markerOur.snippet("OurDrone");
-        markerOur.zIndex(1);
-        markerOur.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        final MarkerOptions defensiveMarker = new MarkerOptions();
+        defensiveMarker.position(curPosition);
+        defensiveMarker.title("DefenDrone");
+        defensiveMarker.snippet("DefenDrone");
+//        markerOur.zIndex(1);
+        defensiveMarker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-        //followMeMission Marker
-        LatLng tarPosition = new LatLng(targetLatitude, targetLongitude);
-
-        final MarkerOptions markerMission = new MarkerOptions();
-        markerMission.position(tarPosition);
-        markerMission.zIndex(0);
-        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
-
-        //malicious Marker
+        //malicious Drone Marker
         LatLng malPosition = new LatLng(maliciousTSPI.getLatitude(), maliciousTSPI.getLongitude());
 
-        final MarkerOptions markerMal = new MarkerOptions();
-        markerMal.position(malPosition);
-        markerMal.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        final MarkerOptions maliciousMarker = new MarkerOptions();
+        maliciousMarker.position(malPosition);
+        defensiveMarker.title("MalDrone");
+        defensiveMarker.snippet("MalDrone");
+        maliciousMarker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
-        mMap.clear();
+//        //followMeMission Marker
+//        LatLng tarPosition = new LatLng(targetLatitude, targetLongitude);
+//
+//        final MarkerOptions markerMission = new MarkerOptions();
+//        markerMission.position(tarPosition);
+//        markerMission.zIndex(0);
+//        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-        droneMarker = mMap.addMarker(markerOur);
-        droneMarker = mMap.addMarker(markerMission);
-        droneMarker = mMap.addMarker(markerMal);
+        mMap. clear();
+
+        droneMarker = mMap.addMarker(defensiveMarker);
+        droneMarker = mMap.addMarker(maliciousMarker);
+//        droneMarker = mMap.addMarker(markerMission);
 
         //drawPolyline();
 
         //drawLine
-//        pathPoints.set(0, curPosition);
-//        pathPoints.set(1, tarPosition);
+        //pathPoints.set(0, curPosition);
+        //pathPoints.set(1, tarPosition);
 
         //below are rotations
         //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
