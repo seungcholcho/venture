@@ -19,6 +19,7 @@ public class BackgroundVirtualStick extends TimerTask {
     private float yaw;
     private float throttle;
     private float temp;
+    private float temp2;
     private float distance;
     private float bearing;
     private float malDroneGPSCollectionPeriod;
@@ -47,7 +48,7 @@ public class BackgroundVirtualStick extends TimerTask {
         this.yaw = -179;
         this.targetYaw = 0;
         this.throttle = 0;
-        this.temp = (float) 0;
+        this.temp = (float) 1;
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.flightController = mflightController;
         this.malDroneGPSCollectionPeriod = 0.5F;
@@ -59,7 +60,8 @@ public class BackgroundVirtualStick extends TimerTask {
         this.yaw = -179;
         this.targetYaw = 0;
         this.throttle = 0;
-        this.temp = (float) 0;
+        this.temp = (float) 1;
+        this.temp2 = (float) 1;
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.flightController = mflightController;
         this.defTSPI = defTSPI;
@@ -69,8 +71,8 @@ public class BackgroundVirtualStick extends TimerTask {
         this.targetLon = 0.0;
         this.targetLat = 0.0;
         this.targetYaw = 0.0F;
-        this.tempLat = 0;
-        this.tempLon = 0;
+        this.tempLat = -90;
+        this.tempLon = -180;
     }
     public void UpdateInputData(float pitch, float roll, float yaw, float throttle) {
         this.pitch = pitch;
@@ -132,8 +134,14 @@ public class BackgroundVirtualStick extends TimerTask {
 
         //임시로 넣는 데이터 임의값 입력하는 코드 시작~~
         malTSPI.appendLatLonToQueue(tempLat, tempLon);
-        tempLat = tempLat + 0.5;
-        tempLon = tempLon + 0.5;
+        tempLat = tempLat + temp;
+        tempLon = tempLon + temp2;
+        if(tempLat>90 || tempLat<-90){
+            temp = temp*-1;
+        }
+        if(tempLon>180 || tempLon<-180){
+            temp2 = temp2*-1;
+        }
 
         long time = System.currentTimeMillis();
         SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
@@ -171,7 +179,8 @@ public class BackgroundVirtualStick extends TimerTask {
             targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
 
             targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLat, targetLon);
-            Log.d("PosPred", "lat: " + String.valueOf(targetLat) + " lon: " + String.valueOf(targetLon) + " yaw: " +String.valueOf(targetYaw));
+            Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
+            Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLat) + " lon: " + String.valueOf(targetLon) + " yaw: " +String.valueOf(targetYaw));
         }
         else{
             Log.d("PosPred","queue empty!");
