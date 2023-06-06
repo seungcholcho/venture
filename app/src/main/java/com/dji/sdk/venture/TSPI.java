@@ -1,10 +1,14 @@
 package com.dji.sdk.venture;
 
+import android.util.Log;
+
 import java.util.Date;
 
 import dji.common.flightcontroller.FlightMode;
 
 public class TSPI {
+    CircularQueue latQueue;
+    CircularQueue lonQueue;
     private Date timestamp;
     private String gpsSignalStrength;
     private double Altitude;
@@ -22,9 +26,13 @@ public class TSPI {
 
     protected FlightMode flightState = null;
 
-
+    public TSPI(){
+        this.latQueue = new CircularQueue(15);
+        this.lonQueue = new CircularQueue(15);
+    }
     public void updateTSPIdji(Date time, String GPSSignal, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
                               double vX, double vY, double vZ, double xXYZ, FlightMode flightState){
+
         this.timestamp = time;
         this.gpsSignalStrength = GPSSignal;
         this.Altitude = altitude;
@@ -56,6 +64,12 @@ public class TSPI {
 
     public double getLongitude(){
         return Longitude;
+    }
+
+    public void appendLatLonToQueue(double lat, double lon){
+        Log.d("appending", "appending");
+        latQueue.insert(lat);
+        lonQueue.insert(lon);
     }
 
     public double getPitch() {

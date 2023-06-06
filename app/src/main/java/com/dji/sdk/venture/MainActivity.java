@@ -232,8 +232,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
             updateTSPI.start();
 
-            backgroundVirtualStick = new BackgroundVirtualStick(flightController);
-
+            //backgroundVirtualStick = new BackgroundVirtualStick(flightController);
+            backgroundVirtualStick = new BackgroundVirtualStick(flightController,defensiveTSPI,maliciousTSPI);
             //최대 고도 제한
             flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
                 @Override
@@ -335,44 +335,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 ////                            }
 ////                        });
 //
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+//                                "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
+//                        mTextCLocation.setText(currentLocation);
+//
+//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
+//                                "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+//                        mTextDistance.setText(flightStates);
+//
+//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
+//                                "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
+//                                "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+//                        mTextState.setText(TSPIState);
+//
+//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
+//                                "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
+//                                "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
+//                                "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
+//                        mTextVirtualState.setText(InputDataState);
+//
+//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+//                        mTextVelocity.setText(Velocity);
+//                    }
+//                });
+//
+//
 //                handler.postDelayed(runnable, loadIntervals);
 //
 //                //Mark on map in real time
 //                //updateDroneLocation();
 //
 //                //Change Textview
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
-//                                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-//                        mTextCLocation.setText(currentLocation);
-//
-//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
-//                                        "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-//                        mTextDistance.setText(flightStates);
-//
-//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
-//                                        "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
-//                                        "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
-//                        mTextState.setText(TSPIState);
-//
-//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
-//                                        "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
-//                                        "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
-//                                        "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
-//                        mTextVirtualState.setText(InputDataState);
-//
-//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-//                        mTextVelocity.setText(Velocity);
-//
-//
-//                    }
-//                });
 //            }
 //        }, loadIntervals);
+
     }
 
     public void onReturn(View view) {
