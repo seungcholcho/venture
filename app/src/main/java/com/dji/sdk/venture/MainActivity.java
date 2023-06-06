@@ -3,6 +3,9 @@ package com.dji.sdk.venture;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,8 +23,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -57,11 +62,11 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 //Test
 // implemts 뒤에 GoogleMap.OnMapClickListener 추가
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener {
-    Handler handler = new Handler();
-    Runnable runnable;
-    int loadIntervals = 1000; //in ms. 1000ms = 1s
-    int refreshTargetIntervals = 5000; //Refresh time to target input
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener,GoogleMap.OnMapClickListener {
+//    Handler handler = new Handler();
+//    Runnable runnable;
+//    int loadIntervals = 1000; //in ms. 1000ms = 1s
+//    int refreshTargetIntervals = 5000; //Refresh time to target input
 
     FlightController flightController;
 
@@ -72,8 +77,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     BackgroundCallback updateTSPI;
 
     private GoogleMap mMap;
-    private Button mBtnStart, mBtnStop, mBtnDisable, mBtnEnable,
-            mBtntmp1, mBtntmp2, mBtntmp3, mBtntmp4, mBtntmp5, mBtntmp6, mBtntmp7;
+    private Button mBtnDisable, mBtnEnable, mBtntmp1, mBtntmp2;
     private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextVelocity;
 
     private String currentLocation;
@@ -119,8 +123,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         initUI();
 
         //Display Map
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         defensiveTSPI = new TSPI();
         maliciousTSPI = new TSPI();
@@ -280,25 +284,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mBtnEnable = (Button) findViewById(R.id.btn_enable);
         mBtnDisable = (Button) findViewById(R.id.btn_disable);
-
         mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
         mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
-        mBtntmp3 = (Button) findViewById(R.id.btn_tmp3);
-        mBtntmp4 = (Button) findViewById(R.id.btn_tmp4);
-        mBtntmp5 = (Button) findViewById(R.id.btn_tmp5);
-        mBtntmp6 = (Button) findViewById(R.id.btn_tmp6);
-        mBtntmp7 = (Button) findViewById(R.id.btn_tmp7);
 
         mBtnEnable.setOnClickListener(this);
         mBtnDisable.setOnClickListener(this);
-
         mBtntmp1.setOnClickListener(this);
         mBtntmp2.setOnClickListener(this);
-        mBtntmp3.setOnClickListener(this);
-        mBtntmp4.setOnClickListener(this);
-        mBtntmp5.setOnClickListener(this);
-        mBtntmp6.setOnClickListener(this);
-        mBtntmp7.setOnClickListener(this);
+
     }
 
     @Override
@@ -333,6 +326,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.btn_tmp1: {
                 //직진
                 Log.d("onClick", "tmp1");
+                sendVirtualStickDataTask.UpdateInputData(0, 0, 0, 0);
                 break;
             }
             case R.id.btn_tmp2: {
@@ -340,31 +334,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("onClick", "tmp2");
                 break;
             }
-            case R.id.btn_tmp3: {
-                // 제자리에서 오른쪽으로 회전
-                Log.d("onClick", "tmp3");
-                break;
-            }
-            case R.id.btn_tmp4: {
-                // 고도 상승
-                Log.d("onClick", "tmp4");
-                break;
-            }
-            case R.id.btn_tmp5: {
-                Log.d("onClick", "tmp5");
-                break;
-            }
-            case R.id.btn_tmp6: {
-                Log.d("onClick", "tmp6");
-                break;
-            }
-            case R.id.btn_tmp7: {
-                Log.d("onClick", "tmp7");
-                sendVirtualStickDataTask.UpdateInputData(0, 0, 0, 0);
-            }
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onMapClick(@NonNull LatLng latLng) {
+        Log.d("onMapClick","Click,Click,Click");
     }
 
     private class SendVirtualStickDataTask extends TimerTask {
@@ -444,42 +421,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("TaskLog", s);
 
             // Connection DB code
-            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-
-                                int i = 0;
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-
-                                    //showToast(String.valueOf(document.getData()));
-
-                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-                                    //Date Timestamp = changeUnixTime(Time);
-                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-                                    double Altitude = (double) document.getData().get("Altitude");
-                                    double Latitude = (double) document.getData().get("Latitude");
-                                    double Longitude = (double) document.getData().get("Longitude");
-
-                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-
-                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-
-                                    i++;
-                                    if (i == 1) {
-                                        break;
-                                    }
-                                }
-                            } else {
-                                Log.w("Error", "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
+//            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            if (task.isSuccessful()) {
+//
+//                                int i = 0;
+//                                for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                    //showToast(String.valueOf(document.getData()));
+//
+//                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+//                                    //Date Timestamp = changeUnixTime(Time);
+//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+//                                    double Altitude = (double) document.getData().get("Altitude");
+//                                    double Latitude = (double) document.getData().get("Latitude");
+//                                    double Longitude = (double) document.getData().get("Longitude");
+//
+//                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+//                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+//                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//
+//                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
+//
+//                                    i++;
+//                                    if (i == 1) {
+//                                        break;
+//                                    }
+//                                }
+//                            } else {
+//                                Log.w("Error", "Error getting documents.", task.getException());
+//                            }
+//                        }
+//                    });
 
 
             //UI 변경
@@ -577,7 +554,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
     public void onReturn(View view) {
         this.finish();
     }
@@ -593,46 +569,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-//        Log.d("Map", "Map ready.");
-//        mMap = googleMap;
-//
-//        LatLng initLocation = new LatLng(0.0, 0.0);
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-//                PackageManager.PERMISSION_GRANTED) {
-//            if
-//            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            } else {
-//                ActivityCompat.requestPermissions(this,
-//                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-//                        1);
-//            }
-//        }
-//
-//        mMap.setMyLocationEnabled(true);
-//
-//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//
-//        long minTime = 1000; //millisecond
-//        float minDistance = 0;
-//
-//        // this location listener is to the device this application is running on only
-//        // to follow a different device, we will need a check box or radio button of some sort to
-//        // either pick to follow the good drone or enemy drone
-//
-//        // 현재 위치 표시
-//        LocationListener listener = new LocationListener() {
-//            @Override
-//            public void onLocationChanged(@NonNull Location location) {
-//                Double latitude = location.getLatitude();
-//                Double longitude = location.getLongitude();
-//                LatLng curPoint = new LatLng(latitude, longitude);
-//                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint, 18));
-//                locationManager.removeUpdates(this);
-//            }
-//        };
-//
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, listener);
+        Log.d("Map", "Map ready.");
+        mMap = googleMap;
+
+        LatLng initLocation = new LatLng(0.0, 0.0);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+            if
+            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        1);
+            }
+        }
+
+        mMap.setMyLocationEnabled(true);
+
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        long minTime = 1000; //millisecond
+        float minDistance = 0;
+
+        // this location listener is to the device this application is running on only
+        // to follow a different device, we will need a check box or radio button of some sort to
+        // either pick to follow the good drone or enemy drone
+
+        // 현재 위치 표시
+        LocationListener listener = new LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+                Double latitude = location.getLatitude();
+                Double longitude = location.getLongitude();
+                LatLng curPoint = new LatLng(latitude, longitude);
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint, 18));
+                locationManager.removeUpdates(this);
+            }
+        };
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, listener);
 
     }
 
