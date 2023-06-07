@@ -146,8 +146,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         initUI();
 
         //Display Map
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+//        mapFragment.getMapAsync(this);
 
         defensiveTSPI = new TSPI();
         maliciousTSPI = new TSPI();
@@ -530,43 +530,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //UI 변경
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    //Mark on map in real time
-                    updateDroneLocation();
-
-                    virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-                    mTextBattery.setText(virtualStickState);
-
-                    defensiveLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
-                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-                    mTextCLocation.setText(defensiveLocation);
-
-                    maliciousLocation = "Lat : " + String.valueOf(maliciousTSPI.getLatitude()) + "\nLon : " + String.valueOf(maliciousTSPI.getLongitude());
-                    mTextMLocation.setText(maliciousLocation);
-
-                    //------------------------------
-                    targetLocation = "Lat : " + String.valueOf(sendVirtualStickDataTask.getTargetLatitude()) + "\nLon : " + String.valueOf(sendVirtualStickDataTask.getTargetLongitude());
-                    mTextTLocation.setText(targetLocation);
-
-                    TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
-                            "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
-                            "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
-                    mTextState.setText(TSPIState);
-
-                    InputDataState = "Input Data State\n Pitch : " + String.valueOf(sendVirtualStickDataTask.getPitch()) +
-                            "\nYaw : " + String.valueOf(sendVirtualStickDataTask.getYaw()) +
-                            "\nRoll : " + String.valueOf(sendVirtualStickDataTask.getRoll()) +
-                            "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
-                    mTextVirtualState.setText(InputDataState);
-
-                    String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-                            + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-                    mTextVelocity.setText(Velocity);
-                }
-            });
+            //Run UI
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    //Mark on map in real time
+//                    updateDroneLocation();
+//
+//                    virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+//                    mTextBattery.setText(virtualStickState);
+//
+//                    defensiveLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+//                            "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
+//                    mTextCLocation.setText(defensiveLocation);
+//
+//                    maliciousLocation = "Lat : " + String.valueOf(maliciousTSPI.getLatitude()) + "\nLon : " + String.valueOf(maliciousTSPI.getLongitude());
+//                    mTextMLocation.setText(maliciousLocation);
+//
+//                    //------------------------------
+//                    targetLocation = "Lat : " + String.valueOf(sendVirtualStickDataTask.getTargetLatitude()) + "\nLon : " + String.valueOf(sendVirtualStickDataTask.getTargetLongitude());
+//                    mTextTLocation.setText(targetLocation);
+//
+//                    TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
+//                            "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
+//                            "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
+//                    mTextState.setText(TSPIState);
+//
+//                    InputDataState = "Input Data State\n Pitch : " + String.valueOf(sendVirtualStickDataTask.getPitch()) +
+//                            "\nYaw : " + String.valueOf(sendVirtualStickDataTask.getYaw()) +
+//                            "\nRoll : " + String.valueOf(sendVirtualStickDataTask.getRoll()) +
+//                            "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
+//                    mTextVirtualState.setText(InputDataState);
+//
+//                    String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+//                            + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+//                    mTextVelocity.setText(Velocity);
+//                }
+//            });
 
             if (getEnableVirtualStick()) {
 
