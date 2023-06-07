@@ -1,5 +1,10 @@
 package com.dji.sdk.venture;
 
+import android.content.Context;
+import android.util.Log;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 import dji.common.flightcontroller.FlightMode;
@@ -7,11 +12,18 @@ import dji.common.flightcontroller.FlightMode;
 public class TSPI {
     CircularQueue latQueue;
     CircularQueue lonQueue;
+    private int queSize = 5;
+    private int taskInterval;
     private Date timestamp;
     private String gpsSignalStrength;
     private double Altitude;
     private double Latitude;
     private double Longitude;
+
+    //trajectory
+    private double targetLat;
+    private double targetLon;
+
 
     private double pitch;
     private double yaw;
@@ -24,9 +36,18 @@ public class TSPI {
 
     protected FlightMode flightState = null;
 
+    //Write Log
+    StringBuffer loggedTSPI;
+    private String header;
+
     public TSPI(){
-        this.latQueue = new CircularQueue(5);
-        this.lonQueue = new CircularQueue(5);
+        this.latQueue = new CircularQueue(queSize);
+        this.lonQueue = new CircularQueue(queSize);
+
+        //Write Log
+        this.loggedTSPI = new StringBuffer();
+        this.header = "Date,curLat,curLon,targetLat,targetLon,queSize,taskInterval\n";
+        this.loggedTSPI.append(header);
     }
 
     public void updateTSPIdji(Date time, String GPSSignal, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
@@ -56,6 +77,18 @@ public class TSPI {
         this.Longitude = longitude;
     }
 
+    public void setTargetLat(double targetLat){
+        this.targetLat = targetLat;
+    }
+
+    public void setTargetLon(double targetLon){
+        this.targetLon = targetLon;
+    }
+    public void setTaskInterval(int taskInterval){
+        this.taskInterval = taskInterval;
+    }
+
+    public Date getTimestamp(){return timestamp;}
     public double getLatitude() {
         return Latitude;
     }
@@ -79,6 +112,15 @@ public class TSPI {
     public double getvY(){return vY;}
     public double getvZ(){return vZ;}
     public double getxXYZ(){return xXYZ;}
+    public int getQueSize(){return queSize;}
+    public double getTargetLat(){
+        return targetLat;
+    }
+
+    public double getTargetLon(){
+        return targetLon;
+    }
+
     public FlightMode getFlightState() {
         return flightState;
     }
@@ -86,6 +128,43 @@ public class TSPI {
     public void appendLatLonToQueue(double lat, double lon){
         latQueue.insert(lat);
         lonQueue.insert(lon);
+    }
+
+    public String logResults(){
+        if(loggedTSPI.length() == header.length()){
+            loggedTSPI.append(timestamp).append(",");
+            loggedTSPI.append(Latitude).append(",");
+            loggedTSPI.append(Longitude).append(",");
+            loggedTSPI.append(targetLat).append(",");
+            loggedTSPI.append(targetLon).append(",");
+            loggedTSPI.append(queSize).append(",");
+            loggedTSPI.append(taskInterval).append("\n");
+        } else {
+            loggedTSPI.delete(0, loggedTSPI.length());
+            loggedTSPI.append(timestamp).append(",");
+            loggedTSPI.append(Latitude).append(",");
+            loggedTSPI.append(Longitude).append(",");
+            loggedTSPI.append(targetLat).append(",");
+            loggedTSPI.append(targetLon).append(",");
+            loggedTSPI.append(queSize).append(",");
+            loggedTSPI.append(taskInterval).append("\n");
+        }
+
+        return String.valueOf(loggedTSPI);
+    }
+
+    public void writeLogfile(Context context, String filename, String content){
+        String data = content;
+        FileOutputStream outputStream;
+        try{
+            outputStream = context.openFileOutput(filename, Context.MODE_APPEND);
+            outputStream.write(data.getBytes());
+            outputStream.close();
+            Log.d("filewrite","success" + filename);
+        }catch(IOException e){
+            Log.d("filewrite","failed");
+            e.printStackTrace();
+        }
     }
 
 

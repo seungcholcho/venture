@@ -1,6 +1,7 @@
 package com.dji.sdk.venture;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -35,8 +36,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -85,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double targetLatitude = 0;
     private double targetLongitude = 0;
 
+    private int taskInterval = 1000;
+
     private Marker droneMarker = null;
 
     List<LatLng> pathPoints = new ArrayList<>();
@@ -95,6 +100,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private BackgroundVirtualStick backgroundVirtualStick;
     private SendVirtualStickDataTask sendVirtualStickDataTask;
+
+    //write log
+    Date date;
+    DateFormat dateFormat;
+    private String strDate;
+    private String fileName;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +136,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         defensiveTSPI = new TSPI();
         maliciousTSPI = new TSPI();
 
+        //Write log
+        mContext = getApplicationContext();
+
+        date = Calendar.getInstance().getTime();
+        dateFormat = new SimpleDateFormat("yyMMddHHmmss");
+
+        strDate = dateFormat.format(date);
+        fileName = (strDate + ".csv");
+
         try {
             flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
             updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
@@ -131,7 +152,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController,defensiveTSPI,maliciousTSPI);
             sendDataTimer = new Timer();
-            sendDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
+            sendDataTimer.schedule(sendVirtualStickDataTask, 100, taskInterval);
+            defensiveTSPI.setTaskInterval(taskInterval);
 
             //최대 고도 제한
             flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
@@ -541,10 +563,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 defTSPI.appendLatLonToQueue(defTSPI.getLatitude(), defTSPI.getLongitude());
 
                 calculateTSPI();
+                defTSPI.setTargetLat(targetLatitude);
+                defTSPI.setTargetLon(targetLongitude);
                 Log.d("TaskCalculate", String.valueOf(getPitch()));
 
                 send();
                 Log.d("TaskSend", "Succeed updated data");
+
+                defTSPI.writeLogfile(mContext,fileName,defTSPI.logResults());
+
             }
         }
 
