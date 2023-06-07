@@ -69,8 +69,9 @@
 
         <TextView
             android:id="@+id/text_current_location"
-            android:layout_width="244dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
+            android:padding="10dp"
             android:text="text_current_location"
             android:textColor="@color/green"
             android:textSize="15dp"
@@ -78,21 +79,23 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/text_target_location"
-            android:layout_width="283dp"
+            android:id="@+id/text_mal_location"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="text_target_location"
+            android:text="text_mal_location"
             android:textColor="@color/blue"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/text_distance"
+            android:id="@+id/text_target_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="distance"
+            android:text="target_location"
+            android:textSize="15dp"
+            android:textColor="@color/red"
             app:layout_constraintEnd_toEndOf="parent" />
 
 

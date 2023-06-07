@@ -5,6 +5,8 @@ import java.util.Date;
 import dji.common.flightcontroller.FlightMode;
 
 public class TSPI {
+    CircularQueue latQueue;
+    CircularQueue lonQueue;
     private Date timestamp;
     private String gpsSignalStrength;
     private double Altitude;
@@ -22,6 +24,10 @@ public class TSPI {
 
     protected FlightMode flightState = null;
 
+    public TSPI(){
+        this.latQueue = new CircularQueue(5);
+        this.lonQueue = new CircularQueue(5);
+    }
 
     public void updateTSPIdji(Date time, String GPSSignal, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
                               double vX, double vY, double vZ, double xXYZ, FlightMode flightState){
@@ -75,6 +81,11 @@ public class TSPI {
     public double getxXYZ(){return xXYZ;}
     public FlightMode getFlightState() {
         return flightState;
+    }
+
+    public void appendLatLonToQueue(double lat, double lon){
+        latQueue.insert(lat);
+        lonQueue.insert(lon);
     }
 
 

@@ -32,13 +32,8 @@ import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,8 +50,6 @@ import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.mission.followme.FollowMeMissionOperator;
-import dji.sdk.mission.followme.FollowMeMissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -78,11 +71,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Button mBtnDisable, mBtnEnable, mBtntmp1, mBtntmp2;
-    private TextView mTextTLocation, mTextCLocation, mTextDistance, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextVelocity;
+    private TextView mTextMLocation, mTextCLocation, mTextTLocation, mTextTime, mTextBattery, mTextState, mTextVirtualState, mTextVelocity;
 
-    private String currentLocation;
+    private String defensiveLocation;
+    private String maliciousLocation;
     private String targetLocation;
-    private String flightStates;
+
+    private String virtualStickState;
     private String InputDataState;
     private String TSPIState;
     private double currentLatitude = 0;
@@ -134,9 +129,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
             updateTSPI.start();
 
-            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController);
+            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController,defensiveTSPI,maliciousTSPI);
             sendDataTimer = new Timer();
-            sendDataTimer.schedule(sendVirtualStickDataTask, 100, 200);
+            sendDataTimer.schedule(sendVirtualStickDataTask, 100, 1000);
 
             //최대 고도 제한
             flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
@@ -155,8 +150,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
 
             //flight 상태 + Mission 상태 출력
-            flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() + "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-            mTextDistance.setText(flightStates);
+            virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+            mTextBattery.setText(virtualStickState);
 
             //Virtual Stick
             flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
@@ -274,8 +269,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTextBattery = (TextView) findViewById(R.id.text_battery);
 
         mTextCLocation = (TextView) findViewById(R.id.text_current_location);
+        mTextMLocation = (TextView) findViewById(R.id.text_mal_location);
         mTextTLocation = (TextView) findViewById(R.id.text_target_location);
-        mTextDistance = (TextView) findViewById(R.id.text_distance);
 
         mTextState = (TextView) findViewById(R.id.text_tmp1);
         mTextVirtualState = (TextView) findViewById(R.id.text_tmp2);
@@ -350,7 +345,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         private float yaw;
         private float throttle;
         private float temp;
+        private float temp2;
+        private float distance;
+        private float bearing;
+        private float malDroneGPSCollectionPeriod;
+        private float predictionPeriod; // predictionPeriod 초 마다 거리를 malDrone의 위치를 예측함.
+        private float predictedVelocity;
+        private float targetYaw;
+
+        private double targetLatitude;
+        private double targetLongitude;
+        private double tempLat; // 나중에 지울 코드
+        private double tempLon; // 나중에 지울 코드
         private boolean enableVirtualStick;
+
+        TSPI defTSPI;
+        TSPI malTSPI;
         FlightController mflightController;
 
         //생성자
@@ -362,6 +372,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             this.temp = (float) 1;
             this.enableVirtualStick = false;
             this.mflightController = mflightController;
+            this.malDroneGPSCollectionPeriod = 0.5F;
+            this.predictionPeriod = 2.0F;
+        }
+
+        public SendVirtualStickDataTask(FlightController mflightController,TSPI defTSPI, TSPI malTSPI) {
+            this.pitch = (float) 0;
+            this.roll = 0;
+            this.yaw = 0;
+            this.throttle = 0;
+            this.temp = (float) 0.3;
+            this.temp2 = (float) 0.3;
+            this.mflightController = mflightController;
+            this.defTSPI = defTSPI;
+            this.malTSPI = malTSPI;
+            this.malDroneGPSCollectionPeriod = 0.5F;
+            this.predictionPeriod = 2.0F;
+            this.targetLatitude = 0.0;
+            this.targetLongitude = 0.0;
+            this.targetYaw = 0.0F;
+            this.tempLat = -90;
+            this.tempLon = -180;
         }
 
         public void UpdateInputData(float pitch, float roll, float yaw, float throttle) {
@@ -406,6 +437,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public float getThrottle() {
             return this.throttle;
         }
+        public double getTargetLatitude() {
+            return this.targetLatitude;
+        }
+        public double getTargetLongitude() {
+            return this.targetLongitude;
+        }
+
 
         public boolean getEnableVirtualStick() {
             return this.enableVirtualStick;
@@ -420,45 +458,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("TaskLog", s);
 
             // Connection DB code
-            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-
-                                int i = 0;
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-
-                                    //showToast(String.valueOf(document.getData()));
-
-                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-                                    //Date Timestamp = changeUnixTime(Time);
-                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-                                    double Altitude = (double) document.getData().get("Altitude");
-                                    double Latitude = (double) document.getData().get("Latitude");
-                                    double Longitude = (double) document.getData().get("Longitude");
-
-                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-
-                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-
-                                    i++;
-                                    if (i == 1) {
-                                        break;
-                                    }
-                                }
-                            } else {
-                                Log.w("Error", "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
+//            db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
+//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            if (task.isSuccessful()) {
+//
+//                                int i = 0;
+//                                for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                    //showToast(String.valueOf(document.getData()));
+//
+//                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+//                                    //Date Timestamp = changeUnixTime(Time);
+//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+//                                    double Altitude = (double) document.getData().get("Altitude");
+//                                    double Latitude = (double) document.getData().get("Latitude");
+//                                    double Longitude = (double) document.getData().get("Longitude");
+//
+//                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+//                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+//                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//
+//                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
+//
+//                                    i++;
+//                                    if (i == 1) {
+//                                        break;
+//                                    }
+//                                }
+//                            } else {
+//                                Log.w("Error", "Error getting documents.", task.getException());
+//                            }
+//                        }
+//                    });
 
 
             //UI 변경
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -466,16 +505,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     //Mark on map in real time
                     updateDroneLocation();
 
-                    currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
+                    virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+                    mTextBattery.setText(virtualStickState);
+
+                    defensiveLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
                             "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-                    mTextCLocation.setText(currentLocation);
+                    mTextCLocation.setText(defensiveLocation);
 
-                    targetLocation = "Lat : " + String.valueOf(maliciousTSPI.getLatitude()) + "\nLon : " + String.valueOf(maliciousTSPI.getLongitude());
+                    maliciousLocation = "Lat : " + String.valueOf(maliciousTSPI.getLatitude()) + "\nLon : " + String.valueOf(maliciousTSPI.getLongitude());
+                    mTextMLocation.setText(maliciousLocation);
+
+                    //------------------------------
+                    targetLocation = "Lat : " + String.valueOf(sendVirtualStickDataTask.getTargetLatitude()) + "\nLon : " + String.valueOf(sendVirtualStickDataTask.getTargetLongitude());
                     mTextTLocation.setText(targetLocation);
-
-                    flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
-                            "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-                    mTextDistance.setText(flightStates);
 
                     TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
                             "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
@@ -495,6 +537,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
 
             if (getEnableVirtualStick()) {
+
+                defTSPI.appendLatLonToQueue(defTSPI.getLatitude(), defTSPI.getLongitude());
+
                 calculateTSPI();
                 Log.d("TaskCalculate", String.valueOf(getPitch()));
 
@@ -506,12 +551,68 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void calculateTSPI() {
             Log.d("calculateTSPI", "Run");
 
+            float time = 2.0F;
+
+            if (defTSPI.latQueue.empty() != true) {
+                //베어링 계산
+                bearing = (float) GPSUtil.calculateBearing(defTSPI.latQueue.getFront(), defTSPI.lonQueue.getFront(), defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear());
+                //비행 거리 계산
+                distance = (float) GPSUtil.haversine(defTSPI.latQueue.getFront(), defTSPI.lonQueue.getFront(), defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear()); // is in Km
+                //속도 계산
+                predictedVelocity = distance / predictionPeriod; // km/s
+                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(distance) + "Velocity " + String.valueOf(predictedVelocity));
+                //
+                //targetLat = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),distance,bearing);
+                //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
+
+                // time초 뒤의 위치 예측
+                targetLatitude = GPSUtil.calculateDestinationLatitude(defTSPI.latQueue.getRear(),predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+                targetLongitude = GPSUtil.calculateDestinationLongitude(defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
+
+                //0607Test에서는 Yaw값 필요 없음
+                //targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
+
+                //Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
+                //Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
+            }
+            else{
+                Log.d("PosPred","queue empty!");
+            }
+
+
+//            if (malTSPI.latQueue.empty() != true) {
+//                //베어링 계산
+//                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
+//                //비행 거리 계산
+//                distance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
+//                //속도 계산
+//                predictedVelocity = distance / predictionPeriod; // km/s
+//                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(distance) + "Velocity " + String.valueOf(predictedVelocity));
+//                //
+//                //targetLat = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),distance,bearing);
+//                //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
+//
+//                // time초 뒤의 위치 예측
+//                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+//                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
+//
+//                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
+//                Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
+//                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
+//            }
+//            else{
+//                Log.d("PosPred","queue empty!");
+//            }
+//            setYaw(targetYaw);
+
+
+            //Legacy Code
             //예상 움직임
 //            후진 하강 -> 전진 상승 반복
 
-            setPitch(this.pitch + temp);
-            if (getPitch() > 4 || getPitch() < -4)
-                temp = temp * -1;
+//            setPitch(this.pitch + temp);
+//            if (getPitch() > 4 || getPitch() < -4)
+//                temp = temp * -1;
 
             //예상 움직임
             //하강 -> 승강 반복
@@ -539,8 +640,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        setPitch(this.pitch + temp);
 //        if (getPitch() > 4 || getPitch() < -4)
 //            temp = temp* -1;
-
-
         }
 
         public void send() {
@@ -624,7 +723,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         defensiveMarker.position(curPosition);
         defensiveMarker.title("DefenDrone");
         defensiveMarker.snippet("DefenDrone");
-//        markerOur.zIndex(1);
         defensiveMarker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
         //malicious Drone Marker
@@ -636,19 +734,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         defensiveMarker.snippet("MalDrone");
         maliciousMarker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
-//        //followMeMission Marker
-//        LatLng tarPosition = new LatLng(targetLatitude, targetLongitude);
-//
-//        final MarkerOptions markerMission = new MarkerOptions();
-//        markerMission.position(tarPosition);
-//        markerMission.zIndex(0);
-//        markerMission.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        //trajectory Marker
+        LatLng tarPosition = new LatLng(sendVirtualStickDataTask.getTargetLatitude(), sendVirtualStickDataTask.getTargetLongitude());
+
+        final MarkerOptions trajectoryTarget = new MarkerOptions();
+        trajectoryTarget.position(tarPosition);
+        trajectoryTarget.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
         mMap. clear();
 
         droneMarker = mMap.addMarker(defensiveMarker);
-        droneMarker = mMap.addMarker(maliciousMarker);
-//        droneMarker = mMap.addMarker(markerMission);
+        //droneMarker = mMap.addMarker(maliciousMarker);
+        droneMarker = mMap.addMarker(trajectoryTarget);
 
         //drawPolyline();
 
