@@ -29,16 +29,23 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Dash;
+import com.google.android.gms.maps.model.Gap;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -100,6 +107,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private BackgroundVirtualStick backgroundVirtualStick;
     private SendVirtualStickDataTask sendVirtualStickDataTask;
+
+    private static final int PATTERN_GAP_LENGTH_PX = 20;
+
+    private static final int POLYGON_STROKE_WIDTH_PX = 8;
+    private static final int PATTERN_DASH_LENGTH_PX = 20;
+    private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+    private static final PatternItem DASH = new Dash(PATTERN_DASH_LENGTH_PX);
+    private static final List<PatternItem> patternList = Arrays.asList(GAP, DASH);
+
 
     //write log
     Date date;
@@ -188,12 +204,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //현재위치 초기화
         currentLatitude = defensiveTSPI.getLatitude();
         currentLongitude = defensiveTSPI.getLongitude();
-
-        //pathPoint값 초기화
-//        initLocation = new LatLng(currentLatitude, currentLongitude);
-//
-//        pathPoints.add(initLocation);
-//        pathPoints.add(initLocation);
     }
 
     @Override
@@ -403,8 +413,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             this.roll = 0;
             this.yaw = 0;
             this.throttle = 0;
-            this.temp = (float) 0.3;
-            this.temp2 = (float) 0.3;
+            this.temp = (float) 1;
+            this.temp2 = (float) 0;
             this.mflightController = mflightController;
             this.defTSPI = defTSPI;
             this.malTSPI = malTSPI;
@@ -570,6 +580,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 send();
                 Log.d("TaskSend", "Succeed updated data");
 
+                //Write Log
                 defTSPI.writeLogfile(mContext,fileName,defTSPI.logResults());
 
             }
@@ -605,6 +616,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             else{
                 Log.d("PosPred","queue empty!");
             }
+
+            //예상 움직임
+//            속도가 점점 빨라졌다가 다시 멈충
+            setPitch(this.pitch + temp);
+            if (getPitch() > 4 || getPitch() < 0)
+                setPitch(0);
+
 
 
 //            if (malTSPI.latQueue.empty() != true) {
@@ -768,17 +786,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         trajectoryTarget.position(tarPosition);
         trajectoryTarget.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-        mMap. clear();
+        mMap.clear();
 
         droneMarker = mMap.addMarker(defensiveMarker);
         //droneMarker = mMap.addMarker(maliciousMarker);
         droneMarker = mMap.addMarker(trajectoryTarget);
 
-        //drawPolyline();
+        //현재 위치 - 예상 위치
+        Polyline polyline = mMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+                .add(curPosition,tarPosition));
 
-        //drawLine
-        //pathPoints.set(0, curPosition);
-        //pathPoints.set(1, tarPosition);
+        polyline.setColor(0xffdee2e6);
+        polyline.setWidth(10);
+        polyline.setEndCap(new RoundCap());
+
+        polyline.setPattern(patternList);
+
 
         //below are rotations
         //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.defensivedrone)); // 1.2cm*1.2cm TODO must adjust to middle.
@@ -788,41 +812,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //rotation ends
 
         //LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
-    }
-
-    private void selectColor(MarkerOptions markerOptions, String color) {
-
-        switch (color) {
-            case "red":
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                break;
-            case "green":
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                break;
-            default:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                break;
-        }
-    }
-
-    private void drawPolyline() {
-
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.RED);
-        polylineOptions.width(5);
-        polylineOptions.addAll(pathPoints);
-        mMap.addPolyline(polylineOptions);
-
-    }
-
-    private Date changeUnixTime(String unixTimeStamp) {
-
-        long timestamp = Long.parseLong(unixTimeStamp);
-        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-        Date date = new Date();
-        date.setTime(timestamp);
-
-        return date;
     }
 
     private void showToast(final String toastMsg) {
