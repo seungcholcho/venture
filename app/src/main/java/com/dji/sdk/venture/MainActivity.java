@@ -575,8 +575,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
                     mTextVirtualState.setText(InputDataState);
 
-                    String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-                            + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+                    String Velocity = String.valueOf(maliciousTSPI.getAltitude_seaTohome());
+
+//                    String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
+//                            + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
+
                     mTextVelocity.setText(Velocity);
                 }
             });
