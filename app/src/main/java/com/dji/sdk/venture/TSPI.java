@@ -72,8 +72,9 @@ public class TSPI {
         this.flightState = flightState;
     }
 
-    public void updateTSPIserver(String GPSSignal, double altitude, double latitude, double longitude){
+    public void updateTSPIserver(String GPSSignal, double altitude_seaTohome,double altitude, double latitude, double longitude){
         this.gpsSignalStrength = GPSSignal;
+        this.Altitude_seaTohome = altitude_seaTohome;
         this.Altitude = altitude;
         this.Latitude = latitude;
         this.Longitude = longitude;

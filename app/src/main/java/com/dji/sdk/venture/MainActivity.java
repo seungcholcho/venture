@@ -37,8 +37,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.RoundCap;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -63,7 +68,7 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 //Test
 // implemts 뒤에 GoogleMap.OnMapClickListener 추가
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener,GoogleMap.OnMapClickListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AdapterView.OnItemSelectedListener, View.OnClickListener, GoogleMap.OnMapClickListener {
 //    Handler handler = new Handler();
 //    Runnable runnable;
 //    int loadIntervals = 1000; //in ms. 1000ms = 1s
@@ -164,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
             updateTSPI.start();
 
-            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController,defensiveTSPI,maliciousTSPI);
+            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController, defensiveTSPI, maliciousTSPI);
             sendDataTimer = new Timer();
             sendDataTimer.schedule(sendVirtualStickDataTask, 100, taskInterval);
             defensiveTSPI.setTaskInterval(taskInterval);
@@ -365,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
-        Log.d("onMapClick","Click,Click,Click");
+        Log.d("onMapClick", "Click,Click,Click");
     }
 
     private class SendVirtualStickDataTask extends TimerTask {
@@ -410,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             this.predictionPeriod = 2.0F;
         }
 
-        public SendVirtualStickDataTask(FlightController mflightController,TSPI defTSPI, TSPI malTSPI) {
+        public SendVirtualStickDataTask(FlightController mflightController, TSPI defTSPI, TSPI malTSPI) {
             this.pitch = (float) 0;
             this.roll = 0;
             this.yaw = 0;
@@ -471,9 +476,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public float getThrottle() {
             return this.throttle;
         }
+
         public double getTargetLatitude() {
             return this.targetLatitude;
         }
+
         public double getTargetLongitude() {
             return this.targetLongitude;
         }
@@ -492,75 +499,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("TaskLog", s);
 
             // Connection DB code
-//            db.collection("0608_생겨라"0608_생겨라").orderBy("Time", Query.Direction.DESCENDING).get()
-////                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-////                        @Override
-////                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-////                            if (task.isSuccessful()) {
-////
-////                                int i = 0;
-////                                for (QueryDocumentSnapshot document : task.getResult()) {
-////
-////                                    //showToast(String.valueOf(document.getData()));
-////
-////                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-////                                    //Date Timestamp = changeUnixTime(Time);
-////                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-////                                    double Altitude = (double) document.getData().get("Altitude");
-////                                    double Latitude = (double) document.getData().get("Latitude");
-////                                    double Longitude = (double) document.getData().get("Longitude");
-////
-////                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-////                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-////                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-////                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-////                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-////
-////                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-////
-////                                    i++;
-////                                    if (i == 1) {
-////                                        break;
-////                                    }
-////                                }
-////                            } else {
-////                                Log.w("Error", "Error getting documents.", task.getException());
-////                            }").orderBy("Time", Query.Direction.DESCENDING).get()
-//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            if (task.isSuccessful()) {
-//
-//                                int i = 0;
-//                                for (QueryDocumentSnapshot document : task.getResult()) {
-//
-//                                    //showToast(String.valueOf(document.getData()));
-//
-//                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-//                                    //Date Timestamp = changeUnixTime(Time);
-//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                    double Altitude = (double) document.getData().get("Altitude");
-//                                    double Latitude = (double) document.getData().get("Latitude");
-//                                    double Longitude = (double) document.getData().get("Longitude");
-//
-//                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-//                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-//                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//
-//                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-//
-//                                    i++;
-//                                    if (i == 1) {
-//                                        break;
-//                                    }
-//                                }
-//                            } else {
-//                                Log.w("Error", "Error getting documents.", task.getException());
-//                            }
-//                        }
-//                    });
+            db.collection("0608_test").orderBy("Time", Query.Direction.DESCENDING).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+
+                                int i = 0;
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                    //showToast(String.valueOf(document.getData()));
+
+                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+                                    //Date Timestamp = changeUnixTime(Time);
+                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+                                    double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
+                                    double Altitude = (double) document.getData().get("Altitude");
+                                    double Latitude = (double) document.getData().get("Latitude");
+                                    double Longitude = (double) document.getData().get("Longitude");
+
+                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+
+                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+
+                                    i++;
+                                    if (i == 1) {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                Log.w("Error", "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
 
 
             //UI 변경
@@ -632,14 +607,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //Change throttle
             defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
             maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-            AltitudeDifference = maliciousAltitude-defensiveAltitude;
+            AltitudeDifference = maliciousAltitude - defensiveAltitude;
 
-            if (AltitudeDifference <= 1.5 && AltitudeDifference >= -1.5){
-                //이 범위 들어오면 빙글뱅글
+            if (AltitudeDifference < 0) {
+                setThrottle(2);
+            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
                 setThrottle(0);
-            }
-            else if (AltitudeDifference > 1.5) {
-                setThrottle(1);
+            } else if (AltitudeDifference < -3) {
+                setThrottle(-1);
             }
 
 
@@ -657,7 +632,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
 
                 // time초 뒤의 위치 예측
-                targetLatitude = GPSUtil.calculateDestinationLatitude(defTSPI.latQueue.getRear(),predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+                targetLatitude = GPSUtil.calculateDestinationLatitude(defTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
                 targetLongitude = GPSUtil.calculateDestinationLongitude(defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
 
                 targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
@@ -665,27 +640,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
                 //Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
                 setYaw(targetYaw);
-            }
-            else{
-                Log.d("PosPred","queue empty!");
+
+                //
+                //setRoll(3);
+            } else {
+                Log.d("PosPred", "queue empty!");
             }
 
             //Change pitch
             //상대 드론와 3미터 차이 나면 속도0
-            if (distance <= 0.0015 && distance >= -0.0015){
-                //이 범위 들어오면 빙글뱅글
-                setPitch(0);
-            }//상대 드론과
-            else if (distance > 0.0015) {
+            if (Math.abs(distance) > 0.003) {
                 setPitch(1);
-            }
-            else if (distance < -0.0015){
+            }//상대 드론과
+            else if (Math.abs(distance) <= 0.003 && Math.abs(distance) >= 0.002) {
+                setPitch(1);
+            } else if (Math.abs(distance) < 0.002 && Math.abs(distance) >= 0.000) {
                 setPitch(-1);
             }
-
-
-
-
 
 
             //예상 움직임
@@ -693,32 +664,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            setPitch(this.pitch + temp);
 //            if (getPitch() > 4 || getPitch() < 0)
 //                setPitch(0);
-
-//            if (malTSPI.latQueue.empty() != true) {
-//                //베어링 계산
-//                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
-//                //비행 거리 계산
-//                distance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
-//                //속도 계산
-//                predictedVelocity = distance / predictionPeriod; // km/s
-//                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(distance) + "Velocity " + String.valueOf(predictedVelocity));
-//                //
-//                //targetLat = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),distance,bearing);
-//                //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
-//
-//                // time초 뒤의 위치 예측
-//                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
-//                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
-//
-//                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
-//                Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
-//                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
-//            }
-//            else{
-//                Log.d("PosPred","queue empty!");
-//            }
-//            setYaw(targetYaw);
-
 
             //Legacy Code
             //예상 움직임
@@ -864,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //현재 위치 - 예상 위치
         Polyline polyline = mMap.addPolyline(new PolylineOptions()
                 .clickable(true)
-                .add(curPosition,tarPosition));
+                .add(curPosition, tarPosition));
 
         polyline.setColor(0xffdee2e6);
         polyline.setWidth(10);
