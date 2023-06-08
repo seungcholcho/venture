@@ -132,162 +132,84 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         //권한허용
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            if
-            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        1);
-            }
-        }
-
-        initUI();
-
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+//                PackageManager.PERMISSION_GRANTED) {
+//            if
+//            (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+//            } else {
+//                ActivityCompat.requestPermissions(this,
+//                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+//                        1);
+//            }
+//        }
+//
+//        initUI();
+//
         //Display Map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        defensiveTSPI = new TSPI();
-        maliciousTSPI = new TSPI();
-
-        //Write log
-        mContext = getApplicationContext();
-
-        date = Calendar.getInstance().getTime();
-        dateFormat = new SimpleDateFormat("yyMMddHHmmss");
-
-        strDate = dateFormat.format(date);
-        fileName = (strDate + ".csv");
-
-        try {
-            flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
-            updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
-            updateTSPI.start();
-
-            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController,defensiveTSPI,maliciousTSPI);
-            sendDataTimer = new Timer();
-            sendDataTimer.schedule(sendVirtualStickDataTask, 100, taskInterval);
-            defensiveTSPI.setTaskInterval(taskInterval);
-
-            //최대 고도 제한
-            flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    Log.d("setFlightHeight", "Completed");
-                }
-            });
-
-            //최대 반경 제한
-            flightController.setMaxFlightRadius(500, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    Log.d("setFlightRadius", "Completed");
-                }
-            });
-
-            //flight 상태 + Mission 상태 출력
-            virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-            mTextBattery.setText(virtualStickState);
-
-            //Virtual Stick
-            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-            flightController.setYawControlMode(YawControlMode.ANGLE);
-            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-
-        } catch (Exception e) {
-            Log.d("FlightControllerState", "not Connected");
-        }
-
-        //현재위치 초기화
-        currentLatitude = defensiveTSPI.getLatitude();
-        currentLongitude = defensiveTSPI.getLongitude();
+//
+//        defensiveTSPI = new TSPI();
+//        maliciousTSPI = new TSPI();
+//
+//        //Write log
+//        mContext = getApplicationContext();
+//
+//        date = Calendar.getInstance().getTime();
+//        dateFormat = new SimpleDateFormat("yyMMddHHmmss");
+//
+//        strDate = dateFormat.format(date);
+//        fileName = (strDate + ".csv");
+//
+//        try {
+//            flightController = ((Aircraft) DJISDKManager.getInstance().getProduct()).getFlightController();
+//            updateTSPI = new BackgroundCallback(defensiveTSPI, flightController);
+//            updateTSPI.start();
+//
+//            sendVirtualStickDataTask = new SendVirtualStickDataTask(flightController,defensiveTSPI,maliciousTSPI);
+//            sendDataTimer = new Timer();
+//            sendDataTimer.schedule(sendVirtualStickDataTask, 100, taskInterval);
+//            defensiveTSPI.setTaskInterval(taskInterval);
+//
+//            //최대 고도 제한
+//            flightController.setMaxFlightHeight(100, new CommonCallbacks.CompletionCallback() {
+//                @Override
+//                public void onResult(DJIError djiError) {
+//                    Log.d("setFlightHeight", "Completed");
+//                }
+//            });
+//
+//            //최대 반경 제한
+//            flightController.setMaxFlightRadius(500, new CommonCallbacks.CompletionCallback() {
+//                @Override
+//                public void onResult(DJIError djiError) {
+//                    Log.d("setFlightRadius", "Completed");
+//                }
+//            });
+//
+//            //flight 상태 + Mission 상태 출력
+//            virtualStickState = "VirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
+//            mTextBattery.setText(virtualStickState);
+//
+//            //Virtual Stick
+//            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+//            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+//            flightController.setYawControlMode(YawControlMode.ANGLE);
+//            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+//
+//        } catch (Exception e) {
+//            Log.d("FlightControllerState", "not Connected");
+//        }
+//
+//        //현재위치 초기화
+//        currentLatitude = defensiveTSPI.getLatitude();
+//        currentLongitude = defensiveTSPI.getLongitude();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-//        handler.postDelayed(runnable = new Runnable() {
-//            //update location of our drone every loadIntervals seconds.
-//            @Override
-//            public void run() {
-//                // Connection DB code
-//                db.collection("0526_test").orderBy("Time", Query.Direction.DESCENDING).get()
-//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                                if (task.isSuccessful()) {
-//
-//                                    int i = 0;
-//                                    for (QueryDocumentSnapshot document : task.getResult()) {
-//
-//                                        //showToast(String.valueOf(document.getData()));
-//
-//                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-//                                        //Date Timestamp = changeUnixTime(Time);
-//                                        String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                        double Altitude = (double) document.getData().get("Altitude");
-//                                        double Latitude = (double) document.getData().get("Latitude");
-//                                        double Longitude = (double) document.getData().get("Longitude");
-//
-//                                        Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-//                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-//                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-//                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//
-//                                        maliciousTSPI.updateTSPIserver(GpsSignal, Altitude, Latitude, Longitude);
-//
-//                                        i++;
-//                                        if (i == 1) {
-//                                            break;
-//                                        }
-//                                    }
-//                                } else {
-//                                    Log.w("Error", "Error getting documents.", task.getException());
-//                                }
-//                            }
-//                        });
-//
-//                handler.postDelayed(runnable, loadIntervals);
-//
-//                //Mark on map in real time
-//                //updateDroneLocation();
-//
-//                //Change Textview
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        currentLocation = "Lat : " + String.valueOf(defensiveTSPI.getLatitude()) +
-//                                "\nLon : " + String.valueOf(defensiveTSPI.getLongitude());
-//                        mTextCLocation.setText(currentLocation);
-//
-//                        flightStates = "Flight state : " + defensiveTSPI.getFlightState().name() +
-//                                "\nVirtualStickController : " + String.valueOf(flightController.isVirtualStickControlModeAvailable());
-//                        mTextDistance.setText(flightStates);
-//
-//                        TSPIState = "TSPI State\n Pitch : " + String.valueOf(defensiveTSPI.getPitch()) +
-//                                "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
-//                                "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
-//                        mTextState.setText(TSPIState);
-//
-//                        InputDataState = "Input Data State\n Pitch : " + String.valueOf(backgroundVirtualStick.getPitch()) +
-//                                "\nYaw : " + String.valueOf(backgroundVirtualStick.getYaw()) +
-//                                "\nRoll : " + String.valueOf(backgroundVirtualStick.getRoll()) +
-//                                "\nThrottle : " + String.valueOf(backgroundVirtualStick.getThrottle());
-//                        mTextVirtualState.setText(InputDataState);
-//
-//                        String Velocity = "Velocity\nX : " + String.valueOf(defensiveTSPI.getvX()) + "\nY: " + String.valueOf(defensiveTSPI.getvY())
-//                                + "\nZ: " + String.valueOf(defensiveTSPI.getvZ()) + "\nXYZ : " + String.valueOf(defensiveTSPI.getxXYZ());
-//                        mTextVelocity.setText(Velocity);
-//
-//                    }
-//                });
-//            }
-//        }, loadIntervals);
+
     }
 
     @Override
@@ -297,72 +219,72 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void initUI() {
 
-        mTextTime = (TextView) findViewById(R.id.text_time);
-        mTextBattery = (TextView) findViewById(R.id.text_battery);
-
-        mTextCLocation = (TextView) findViewById(R.id.text_current_location);
-        mTextMLocation = (TextView) findViewById(R.id.text_mal_location);
-        mTextTLocation = (TextView) findViewById(R.id.text_target_location);
-
-        mTextState = (TextView) findViewById(R.id.text_tmp1);
-        mTextVirtualState = (TextView) findViewById(R.id.text_tmp2);
-        mTextVelocity = (TextView) findViewById(R.id.text_tmp3);
-
-        mBtnEnable = (Button) findViewById(R.id.btn_enable);
-        mBtnDisable = (Button) findViewById(R.id.btn_disable);
-        mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
-        mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
-
-        mBtnEnable.setOnClickListener(this);
-        mBtnDisable.setOnClickListener(this);
-        mBtntmp1.setOnClickListener(this);
-        mBtntmp2.setOnClickListener(this);
+//        mTextTime = (TextView) findViewById(R.id.text_time);
+//        mTextBattery = (TextView) findViewById(R.id.text_battery);
+//
+//        mTextCLocation = (TextView) findViewById(R.id.text_current_location);
+//        mTextMLocation = (TextView) findViewById(R.id.text_mal_location);
+//        mTextTLocation = (TextView) findViewById(R.id.text_target_location);
+//
+//        mTextState = (TextView) findViewById(R.id.text_tmp1);
+//        mTextVirtualState = (TextView) findViewById(R.id.text_tmp2);
+//        mTextVelocity = (TextView) findViewById(R.id.text_tmp3);
+//
+//        mBtnEnable = (Button) findViewById(R.id.btn_enable);
+//        mBtnDisable = (Button) findViewById(R.id.btn_disable);
+//        mBtntmp1 = (Button) findViewById(R.id.btn_tmp1);
+//        mBtntmp2 = (Button) findViewById(R.id.btn_tmp2);
+//
+//        mBtnEnable.setOnClickListener(this);
+//        mBtnDisable.setOnClickListener(this);
+//        mBtntmp1.setOnClickListener(this);
+//        mBtntmp2.setOnClickListener(this);
 
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_enable: {
-                Log.d("onClick", "Enable");
-
-                flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        flightController.setVirtualStickAdvancedModeEnabled(true);
-                        sendVirtualStickDataTask.setEnableVirtualStick(true);
-                    }
-                });
-
-                break;
-            }
-            case R.id.btn_disable: {
-                Log.d("onClick", "Disable");
-
-                flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        flightController.setVirtualStickAdvancedModeEnabled(false);
-                        sendVirtualStickDataTask.setEnableVirtualStick(false);
-                    }
-                });
-
-                break;
-            }
-            case R.id.btn_tmp1: {
-                //직진
-                Log.d("onClick", "tmp1");
-                sendVirtualStickDataTask.UpdateInputData(0, 0, 0, 0);
-                break;
-            }
-            case R.id.btn_tmp2: {
-                //우(횡) 이동
-                Log.d("onClick", "tmp2");
-                break;
-            }
-            default:
-                break;
-        }
+//        switch (v.getId()) {
+//            case R.id.btn_enable: {
+//                Log.d("onClick", "Enable");
+//
+//                flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+//                    @Override
+//                    public void onResult(DJIError djiError) {
+//                        flightController.setVirtualStickAdvancedModeEnabled(true);
+//                        sendVirtualStickDataTask.setEnableVirtualStick(true);
+//                    }
+//                });
+//
+//                break;
+//            }
+//            case R.id.btn_disable: {
+//                Log.d("onClick", "Disable");
+//
+//                flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
+//                    @Override
+//                    public void onResult(DJIError djiError) {
+//                        flightController.setVirtualStickAdvancedModeEnabled(false);
+//                        sendVirtualStickDataTask.setEnableVirtualStick(false);
+//                    }
+//                });
+//
+//                break;
+//            }
+//            case R.id.btn_tmp1: {
+//                //직진
+//                Log.d("onClick", "tmp1");
+//                sendVirtualStickDataTask.UpdateInputData(0, 0, 0, 0);
+//                break;
+//            }
+//            case R.id.btn_tmp2: {
+//                //우(횡) 이동
+//                Log.d("onClick", "tmp2");
+//                break;
+//            }
+//            default:
+//                break;
+//        }
     }
 
     @Override

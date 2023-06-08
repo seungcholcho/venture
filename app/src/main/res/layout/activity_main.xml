@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-<!--수경화이팅-->
+
     <LinearLayout
         android:id="@+id/linearLayout0"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="right"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,26 +20,16 @@
             android:id="@+id/text_battery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="100dp"
+            android:layout_marginEnd="50dp"
             android:text="battery residual"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/text_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Time residual"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
     </LinearLayout>
-
     <FrameLayout
         android:id="@+id/mapFrame"
         android:layout_width="0dp"
-        android:layout_height="250dp"
-        app:layout_constraintTop_toBottomOf="@id/linearLayout0"
+        android:layout_height="300dp"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout0"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -53,52 +43,55 @@
             android:layout_height="match_parent" />
 
     </FrameLayout>
-
-
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@+id/mapFrame"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.85">
+        app:layout_constraintTop_toBottomOf="@+id/mapFrame"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        >
 
         <TextView
-            android:id="@+id/text_current_location"
-            android:layout_width="250dp"
+            android:id="@+id/text_defensive"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+
+            android:text="defensive"
             android:padding="10dp"
-            android:text="text_current_location"
             android:textColor="@color/green"
+            android:layout_weight="1"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/text_mal_location"
-            android:layout_width="250dp"
+            android:id="@+id/text_malicious"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:padding="10dp"
-            android:text="text_mal_location"
+            android:text="malicious"
+
             android:textColor="@color/blue"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/text_target_location"
-            android:layout_width="wrap_content"
+            android:id="@+id/text_target"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:padding="10dp"
-            android:text="target_location"
-            android:textSize="15dp"
+            android:text="target"
+
             android:textColor="@color/red"
+            android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
-
-
     </LinearLayout>
 
     <LinearLayout
@@ -106,37 +99,48 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@+id/linearLayout1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.7">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout1"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
+        >
 
         <TextView
-            android:id="@+id/text_tmp1"
-            android:layout_width="244dp"
+            android:id="@+id/text_defensive_location"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="tmp1"
+            android:padding="10dp"
+            android:layout_weight="1"
+
+            android:text="current_location"
+            android:textColor="@color/green"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/text_tmp2"
-            android:layout_width="283dp"
+            android:id="@+id/text_mal_location"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="tmp2"
+            android:layout_weight="1"
+            android:text="mal_location"
+
+            android:textColor="@color/blue"
             android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/text_tmp3"
-            android:layout_width="wrap_content"
+            android:id="@+id/text_target_location"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="tmp3"
+            android:layout_weight="1"
+            android:text="target_location"
+
+            android:textColor="@color/red"
+            android:textSize="15dp"
             app:layout_constraintEnd_toEndOf="parent" />
     </LinearLayout>
 
@@ -145,7 +149,59 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
+        >
+
+        <TextView
+            android:id="@+id/text_defensive_TSPI"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_weight="1"
+
+            android:text="current_TSPI"
+            android:textColor="@color/green"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/text_mal_TSPI"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_weight="1"
+            android:text="mal_TSPI"
+
+            android:textColor="@color/blue"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/text_target_TSPI"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_weight="1"
+            android:text="target_TSPI"
+
+            android:textColor="@color/red"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -154,6 +210,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginHorizontal="3dp"
             android:text="Enable" />
 
         <Button
@@ -161,81 +218,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginHorizontal="3dp"
             android:text="Disable" />
 
         <Button
-            android:id="@+id/btn_tmp1"
+            android:id="@+id/btn_tmp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginHorizontal="3dp"
             android:text="tmp1" />
 
-        <Button
-            android:id="@+id/btn_tmp2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="tmp2" />
     </LinearLayout>
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/linearLayout4"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"-->
-<!--        app:layout_constraintVertical_bias="0.15">-->
-
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_tmp3"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="tmp3" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_tmp4"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="Tmp4" />-->
-<!--    </LinearLayout>-->
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/linearLayout5"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"-->
-<!--        app:layout_constraintVertical_bias="0.15">-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_tmp5"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="tmp5" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_tmp6"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="tmp6" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_tmp7"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="Init" />-->
-<!--    </LinearLayout>-->
-
 </androidx.constraintlayout.widget.ConstraintLayout>
