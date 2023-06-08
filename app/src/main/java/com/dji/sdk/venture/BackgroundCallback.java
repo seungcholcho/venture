@@ -19,6 +19,7 @@ public class BackgroundCallback extends Thread {
 
    private Date timestamp;
    private String gpsSignalStrength;
+   private double Altitude_seaTohome;
    private double Altitude;
    private double Latitude;
    private double Longitude;
@@ -55,7 +56,10 @@ public class BackgroundCallback extends Thread {
 
                     timestamp = Calendar.getInstance().getTime();
                     gpsSignalStrength = String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel());
+
+                    Altitude_seaTohome = djiFlightControllerCurrentState.getTakeoffLocationAltitude();
                     Altitude = locationCoordinate3D.getAltitude();
+
                     Latitude = locationCoordinate3D.getLatitude();
                     Longitude = locationCoordinate3D.getLongitude();
                     flightState = djiFlightControllerCurrentState.getFlightMode();
@@ -71,7 +75,7 @@ public class BackgroundCallback extends Thread {
                     yaw = attitude.yaw;
                     roll = attitude.roll;
 
-                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude,Latitude,Longitude,pitch,yaw,roll,vX,vY,vZ,xXYZ,flightState);
+                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude_seaTohome,Altitude,Latitude,Longitude,pitch,yaw,roll,vX,vY,vZ,xXYZ,flightState);
                 }
             });
         }

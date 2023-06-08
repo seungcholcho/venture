@@ -16,6 +16,7 @@ public class TSPI {
     private int taskInterval;
     private Date timestamp;
     private String gpsSignalStrength;
+    private double Altitude_seaTohome;
     private double Altitude;
     private double Latitude;
     private double Longitude;
@@ -50,10 +51,11 @@ public class TSPI {
         this.loggedTSPI.append(header);
     }
 
-    public void updateTSPIdji(Date time, String GPSSignal, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
+    public void updateTSPIdji(Date time, String GPSSignal, double altitude_seaTohome, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
                               double vX, double vY, double vZ, double xXYZ, FlightMode flightState){
         this.timestamp = time;
         this.gpsSignalStrength = GPSSignal;
+        this.Altitude_seaTohome = altitude_seaTohome;
         this.Altitude = altitude;
         this.Latitude = latitude;
         this.Longitude = longitude;
@@ -89,6 +91,8 @@ public class TSPI {
     }
 
     public Date getTimestamp(){return timestamp;}
+    public double getAltitude_seaTohome(){return Altitude_seaTohome;}
+    public double getAltitude(){return Altitude;}
     public double getLatitude() {
         return Latitude;
     }
