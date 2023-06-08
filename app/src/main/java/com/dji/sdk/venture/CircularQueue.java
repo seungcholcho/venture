@@ -11,8 +11,8 @@ public class CircularQueue {
     // 큐 배열 생성
     public CircularQueue(int maxSize){
 
-        this.front = 0;
-        this.rear = -1;
+        this.front = 1;
+        this.rear = 0;
 
         // 실제 크기보다 하나 크게 지정한다 (공백과 포화를 막기 위함)
         this.maxSize = maxSize+1;
@@ -38,7 +38,7 @@ public class CircularQueue {
 
         // rear 가 배열의 마지막이면 rear 포인터를 앞으로 돌린다.
         if(rear == maxSize-1){
-            rear = -1;
+            rear = 0;
         }
         queueArray[++rear] = item;
     }
@@ -58,7 +58,7 @@ public class CircularQueue {
 
         // front의 다음 index가 배열크기+1 이면 처음으로 돌아간다
         if(front==maxSize){
-            front = 0;
+            front = 1;
         }
         return item;
     }
@@ -69,5 +69,4 @@ public class CircularQueue {
     public double getRear(){
         return queueArray[rear];
     }
-
 }
