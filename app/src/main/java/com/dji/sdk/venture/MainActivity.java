@@ -486,17 +486,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             float time = 2.0F;
 
             //Change throttle
-            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
-            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-            AltitudeDifference = maliciousAltitude - defensiveAltitude;
-
-            if (AltitudeDifference < 0) {
-                setThrottle(2);
-            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
-                setThrottle(0);
-            } else if (AltitudeDifference < -3) {
-                setThrottle(-1);
-            }
+//            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
+//            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
+//            AltitudeDifference = maliciousAltitude - defensiveAltitude;
+//
+//            if (AltitudeDifference < 0) {
+//                setThrottle(2);
+//            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
+//                setThrottle(0);
+//            } else if (AltitudeDifference < -3) {
+//                setThrottle(-1);
+//            }
 
 
             //Change Yaw
