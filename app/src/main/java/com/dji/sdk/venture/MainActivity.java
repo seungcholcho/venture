@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String InputDataState;
 
     //interval time
-    private int taskInterval = 1000;
+    private int taskInterval = 200;
     private Timer sendDataTimer;
 
     //Database
@@ -276,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private class SendVirtualStickDataTask extends TimerTask {
 
+        private int updateCount;
         private float pitch;
         private float roll;
         private float yaw;
@@ -300,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //생성자
         public SendVirtualStickDataTask(FlightController mflightController, TSPI defTSPI, TSPI malTSPI) {
+            this.updateCount = 0;
             this.pitch = (float) 0;
             this.roll = 0;
             this.yaw = 0;
@@ -357,9 +359,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public float getThrottle() {
             return this.throttle;
         }
-        public float getMaliciousDrone_flyDistance(){return this.maliciousDrone_flyDistance;}
-        public float getDistance_defenToTrajectory(){return this.distance_defenToTrajectory;}
-        public double getAltitudeDifference(){return this.AltitudeDifference;}
+
+        public float getMaliciousDrone_flyDistance() {
+            return this.maliciousDrone_flyDistance;
+        }
+
+        public float getDistance_defenToTrajectory() {
+            return this.distance_defenToTrajectory;
+        }
+
+        public double getAltitudeDifference() {
+            return this.AltitudeDifference;
+        }
 
         public double getTargetLatitude() {
             return this.targetLatitude;
@@ -373,48 +384,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public boolean getEnableVirtualStick() {
             return this.enableVirtualStick;
         }
+        public int getUpdateCount(){
+            return this.updateCount;
+        }
 
         @Override
         public void run() {
 
-            // Connection DB code
-            db.collection("0612_test_3").orderBy("Time", Query.Direction.DESCENDING).get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
+            if (updateCount < 5) {
+                // Connection DB code
+                db.collection("0612_test_0").orderBy("Time", Query.Direction.DESCENDING).get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
 
-                                int i = 0;
-                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    int i = 0;
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
 
-                                    //showToast(String.valueOf(document.getData()));
+                                        //showToast(String.valueOf(document.getData()));
 
-                                    //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
-                                    //Date Timestamp = changeUnixTime(Time);
-                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-                                    double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
-                                    double Altitude = (double) document.getData().get("Altitude");
-                                    double Latitude = (double) document.getData().get("Latitude");
-                                    double Longitude = (double) document.getData().get("Longitude");
+                                        //String Time = String.valueOf(document.getData().get("Time").getClass().getName());
+                                        //Date Timestamp = changeUnixTime(Time);
+                                        String GpsSignal = (String) document.getData().get("GpsSignal");
+                                        double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
+                                        double Altitude = (double) document.getData().get("Altitude");
+                                        double Latitude = (double) document.getData().get("Latitude");
+                                        double Longitude = (double) document.getData().get("Longitude");
 
-                                    Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
-                                    Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-                                    Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-                                    Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                        Log.d("Firebase", "Time : " + String.valueOf(document.getData().get("Time")));
+                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
 
-                                    maliciousTSPI.updateTSPIserver(GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+                                        maliciousTSPI.updateTSPIserver(GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
 
-                                    i++;
-                                    if (i == 1) {
-                                        break;
+                                        i++;
+                                        if (i == 1) {
+                                            break;
+                                        }
                                     }
+                                } else {
+                                    Log.w("Error", "Error getting documents.", task.getException());
                                 }
-                            } else {
-                                Log.w("Error", "Error getting documents.", task.getException());
                             }
-                        }
-                    });
+                        });
+
+                if (updateCount == 4) {
+                    updateCount = 0;
+                }
+            }
 
 
             //UI 변경
@@ -440,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     //------------------------------------------------------------------------------
 
-                    defensiveTSPIState ="Altitude_seatohome : " + String.valueOf(defensiveTSPI.getAltitude_seaTohome()) +
+                    defensiveTSPIState = "Altitude_seatohome : " + String.valueOf(defensiveTSPI.getAltitude_seaTohome()) +
                             "\nAltitude : " + String.valueOf(defensiveTSPI.getAltitude()) +
                             "\nPitch : " + String.valueOf(defensiveTSPI.getPitch()) +
                             "\nYaw : " + String.valueOf(defensiveTSPI.getYaw()) +
@@ -460,9 +480,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     InputDataState = "Input Data State\n Pitch : " + String.valueOf(sendVirtualStickDataTask.getPitch()) +
                             "\nYaw : " + String.valueOf(sendVirtualStickDataTask.getYaw()) +
                             "\nRoll : " + String.valueOf(sendVirtualStickDataTask.getRoll()) +
-                            "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
+                            "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle()) +
+                            "\nCount : " + String.valueOf(sendVirtualStickDataTask.getUpdateCount());
 
-                    Log.d("SendData",InputDataState);
+                    Log.d("SendData", InputDataState);
                     mTextTrajectoryTSPI.setText(InputDataState);
                 }
             });
@@ -479,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("TaskSend", "Succeed updated data");
 
                 //Write Log
-                defTSPI.writeLogfile(mContext,fileName,defTSPI.logResults());
+                defTSPI.writeLogfile(mContext, fileName, defTSPI.logResults());
 
             }
         }
@@ -514,13 +535,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
 
                 // time초 뒤의 위치 예측
-                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
                 targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
 
                 targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
 
                 Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
-                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
+                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " + String.valueOf(targetYaw));
 
                 setYaw(targetYaw);
                 setPitch(1);
