@@ -489,19 +489,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             float time = 2.0F;
 
-            //Todo 0612_test_4
             //Change throttle
-            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
-            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-            AltitudeDifference = maliciousAltitude - defensiveAltitude;
-
-            if (AltitudeDifference < 0) {
-                setThrottle(2);
-            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
-                setThrottle(0);
-            } else if (AltitudeDifference < -3) {
-                setThrottle(-1);
-            }
+//            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
+//            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
+//            AltitudeDifference = maliciousAltitude - defensiveAltitude;
+//
+//            if (AltitudeDifference < 0) {
+//                setThrottle(2);
+//            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
+//                setThrottle(0);
+//            } else if (AltitudeDifference < -3) {
+//                setThrottle(-1);
+//            }
 
 
             //Change Yaw
@@ -524,20 +523,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
 
                 setYaw(targetYaw);
+                setPitch(1);
 
                 //Calculation of the difference between the Defensive location and trajectory location
                 distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
 
                 //Change pitch
                 //상대 드론와 3미터 차이 나면 속도0
-                if (Math.abs(distance_defenToTrajectory) > 0.003) {
-                    setPitch(1);
-                }//상대 드론과
-                else if (Math.abs(distance_defenToTrajectory) <= 0.003 && Math.abs(distance_defenToTrajectory) >= 0.002) {
-                    setPitch(1);
-                } else if (Math.abs(distance_defenToTrajectory) < 0.002 && Math.abs(distance_defenToTrajectory) >= 0.000) {
-                    setPitch(-1);
-                }
+//                if (Math.abs(distance_defenToTrajectory) > 0.003) {
+//                    setPitch(1);
+//                }//상대 드론과
+//                else if (Math.abs(distance_defenToTrajectory) <= 0.003 && Math.abs(distance_defenToTrajectory) >= 0.002) {
+//                    setPitch(1);
+//                } else if (Math.abs(distance_defenToTrajectory) < 0.002 && Math.abs(distance_defenToTrajectory) >= 0.000) {
+//                    setPitch(-1);
+//                }
 
             } else {
                 Log.d("PosPred", "queue empty!");
