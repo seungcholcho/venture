@@ -38,8 +38,12 @@ public class GPSUtil {
         double bearingRad = Math.atan2(y, x);
         double bearingDeg = Math.toDegrees(bearingRad);
 
-        // Convert to a compass bearing between 0 and 360 degrees
+        // Convert to a compass bearing between -180 and 180 degrees
         double bearing = (bearingDeg + 360) % 360;
+
+        if (bearing > 180.0) {
+            bearing -= 360.0;
+        }
 
         return bearing;
     }

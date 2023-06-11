@@ -284,20 +284,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         private double defensiveAltitude;
         private double maliciousAltitude;
         private double AltitudeDifference;
-
-        private float temp;
-        private float temp2;
         private float distance_defenToMal;
         private float distance_defenToTrajectory;
         private float bearing;
-        private float malDroneGPSCollectionPeriod;
         private float predictionPeriod; // predictionPeriod 초 마다 거리를 malDrone의 위치를 예측함.
         private float predictedVelocity;
         private float targetYaw;
         private double targetLatitude;
         private double targetLongitude;
-        private double tempLat; // 나중에 지울 코드
-        private double tempLon; // 나중에 지울 코드
         private boolean enableVirtualStick;
 
         TSPI defTSPI;
@@ -305,35 +299,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         FlightController mflightController;
 
         //생성자
-        public SendVirtualStickDataTask(FlightController mflightController) {
-            this.pitch = (float) 2;
-            this.roll = 0;
-            this.yaw = -179;
-            this.throttle = 0;
-            this.temp = (float) 1;
-            this.enableVirtualStick = false;
-            this.mflightController = mflightController;
-            this.malDroneGPSCollectionPeriod = 0.5F;
-            this.predictionPeriod = 2.0F;
-        }
-
         public SendVirtualStickDataTask(FlightController mflightController, TSPI defTSPI, TSPI malTSPI) {
             this.pitch = (float) 0;
             this.roll = 0;
             this.yaw = 0;
             this.throttle = 0;
-            this.temp = (float) 1;
-            this.temp2 = (float) 0;
-            this.mflightController = mflightController;
-            this.defTSPI = defTSPI;
-            this.malTSPI = malTSPI;
-            this.malDroneGPSCollectionPeriod = 0.5F;
+
             this.predictionPeriod = 2.0F;
             this.targetLatitude = 0.0;
             this.targetLongitude = 0.0;
             this.targetYaw = 0.0F;
-            this.tempLat = -90;
-            this.tempLon = -180;
+
+            this.mflightController = mflightController;
+            this.defTSPI = defTSPI;
+            this.malTSPI = malTSPI;
         }
 
         public void UpdateInputData(float pitch, float roll, float yaw, float throttle) {
@@ -399,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void run() {
 
             // Connection DB code
-            db.collection("0608_test00").orderBy("Time", Query.Direction.DESCENDING).get()
+            db.collection("0612_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -439,7 +418,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             //UI 변경
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -480,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             "\nRoll : " + String.valueOf(sendVirtualStickDataTask.getRoll()) +
                             "\nThrottle : " + String.valueOf(sendVirtualStickDataTask.getThrottle());
 
+                    Log.d("SendData",InputDataState);
                     mTextTrajectoryTSPI.setText(InputDataState);
                 }
             });
@@ -522,7 +501,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //Change Yaw
             if (malTSPI.latQueue.empty() != true) {
-                //malTSPI
                 //베어링 계산
                 bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
                 //비행 거리 계산
@@ -530,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //속도 계산
                 predictedVelocity = distance_defenToMal / predictionPeriod; // km/s
                 Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(distance_defenToMal) + "Velocity " + String.valueOf(predictedVelocity));
-                //
+
                 //targetLat = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),distance,bearing);
                 //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
 
@@ -539,93 +517,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
 
                 targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
+
                 Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
                 Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
+
                 setYaw(targetYaw);
-
-//                //베어링 계산
-//                bearing = (float) GPSUtil.calculateBearing(defTSPI.latQueue.getFront(), defTSPI.lonQueue.getFront(), defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear());
-//                //비행 거리 계산
-//                distance_defenToMal = (float) GPSUtil.haversine(defTSPI.latQueue.getFront(), defTSPI.lonQueue.getFront(), defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear()); // is in Km
-//                //속도 계산
-//                predictedVelocity = distance_defenToMal / predictionPeriod; // km/s
-//                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(distance_defenToMal) + "Velocity " + String.valueOf(predictedVelocity));
-//                //
-//                //targetLat = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(),distance,bearing);
-//                //targetLon = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(),malTSPI.lonQueue.getRear(),distance,bearing);
-//
-//                // time초 뒤의 위치 예측
-//                targetLatitude = GPSUtil.calculateDestinationLatitude(defTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
-//                targetLongitude = GPSUtil.calculateDestinationLongitude(defTSPI.latQueue.getRear(), defTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
-//
-//                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
-//
-//                //Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
-//                //Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " +String.valueOf(targetYaw));
-//                setYaw(targetYaw);
-
-                //
-                //setRoll(3);
 
                 //Change pitch
                 //상대 드론와 3미터 차이 나면 속도0
-                if (Math.abs(distance_defenToMal) > 0.003) {
-                    setPitch(1);
-                }//상대 드론과
-                else if (Math.abs(distance_defenToMal) <= 0.003 && Math.abs(distance_defenToMal) >= 0.002) {
-                    setPitch(1);
-                } else if (Math.abs(distance_defenToMal) < 0.002 && Math.abs(distance_defenToMal) >= 0.000) {
-                    setPitch(-1);
-                }
+//                if (Math.abs(distance_defenToMal) > 0.003) {
+//                    setPitch(1);
+//                }//상대 드론과
+//                else if (Math.abs(distance_defenToMal) <= 0.003 && Math.abs(distance_defenToMal) >= 0.002) {
+//                    setPitch(1);
+//                } else if (Math.abs(distance_defenToMal) < 0.002 && Math.abs(distance_defenToMal) >= 0.000) {
+//                    setPitch(-1);
+//                }
 
                 //Calculation of the difference between the Defensive location and trajectory location
                 distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
             } else {
                 Log.d("PosPred", "queue empty!");
             }
-
-
-
-            //예상 움직임
-//            속도가 점점 빨라졌다가 다시 멈충
-//            setPitch(this.pitch + temp);
-//            if (getPitch() > 4 || getPitch() < 0)
-//                setPitch(0);
-
-            //Legacy Code
-            //예상 움직임
-//            후진 하강 -> 전진 상승 반복
-
-//            setPitch(this.pitch + temp);
-//            if (getPitch() > 4 || getPitch() < -4)
-//                temp = temp * -1;
-
-            //예상 움직임
-            //하강 -> 승강 반복
-//        setThrottle(this.throttle + 1);
-
-//        if(getThrottle()<15){
-//            setThrottle(getThrottle() + 5);
-//        }else if (getThrottle()==15){
-//            setThrottle(3);
-//        }
-
-//        if (getThrottle() > 4 || getThrottle() < -4){
-//            Log.d("calculateTSPI","IF");
-//            setThrottle(-4);
-//        }
-
-            //      예상 움직임
-//      0.2초마다 회전
-//        setYaw(this.yaw + (float) temp);
-//        if (getYaw() > 180 || getYaw() < -180)
-//            temp = temp* -1;
-
-            //예상 움직임
-            //후진 하강 -> 전진 상승 반복
-//        setPitch(this.pitch + temp);
-//        if (getPitch() > 4 || getPitch() < -4)
-//            temp = temp* -1;
         }
 
         public void send() {
@@ -739,8 +652,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //float angle = (float)mTSPI.getYaw();
         //markerOptions.rotation(angle);
         //rotation ends
-
-        //LatLng tarPos = new LatLng(targetLatitude,targetLongitude);
     }
 
     private void showToast(final String toastMsg) {
