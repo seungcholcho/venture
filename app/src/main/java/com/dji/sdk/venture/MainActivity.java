@@ -489,19 +489,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             float time = 2.0F;
 
-            //Todo 0612_test_2
+            //Todo 0612_test_4
             //Change throttle
-//            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
-//            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-//            AltitudeDifference = maliciousAltitude - defensiveAltitude;
-//
-//            if (AltitudeDifference < 0) {
-//                setThrottle(2);
-//            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
-//                setThrottle(0);
-//            } else if (AltitudeDifference < -3) {
-//                setThrottle(-1);
-//            }
+            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
+            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
+            AltitudeDifference = maliciousAltitude - defensiveAltitude;
+
+            if (AltitudeDifference < 0) {
+                setThrottle(2);
+            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
+                setThrottle(0);
+            } else if (AltitudeDifference < -3) {
+                setThrottle(-1);
+            }
 
 
             //Change Yaw
@@ -525,7 +525,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 setYaw(targetYaw);
 
-                //Todo 0612_test_3
                 //Calculation of the difference between the Defensive location and trajectory location
                 distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
 
