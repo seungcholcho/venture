@@ -14,7 +14,7 @@ public class TSPI {
     CircularQueue lonQueue;
     private int queSize = 2;
     private int taskInterval;
-    private Date timestamp;
+    private String timestamp;
     private String gpsSignalStrength;
     private double Altitude_seaTohome;
     private double Altitude;
@@ -51,7 +51,7 @@ public class TSPI {
         this.loggedTSPI.append(header);
     }
 
-    public void updateTSPIdji(Date time, String GPSSignal, double altitude_seaTohome, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
+    public void updateTSPIdji(String time, String GPSSignal, double altitude_seaTohome, double altitude, double latitude, double longitude, double pitch, double yaw, double roll,
                               double vX, double vY, double vZ, double xXYZ, FlightMode flightState){
         this.timestamp = time;
         this.gpsSignalStrength = GPSSignal;
@@ -72,7 +72,8 @@ public class TSPI {
         this.flightState = flightState;
     }
 
-    public void updateTSPIserver(String GPSSignal, double altitude_seaTohome,double altitude, double latitude, double longitude){
+    public void updateTSPIserver(String timestamp,String GPSSignal, double altitude_seaTohome,double altitude, double latitude, double longitude){
+        this.timestamp = timestamp;
         this.gpsSignalStrength = GPSSignal;
         this.Altitude_seaTohome = altitude_seaTohome;
         this.Altitude = altitude;
@@ -91,7 +92,7 @@ public class TSPI {
         this.taskInterval = taskInterval;
     }
 
-    public Date getTimestamp(){return timestamp;}
+    public String getTimestamp(){return timestamp;}
     public double getAltitude_seaTohome(){return Altitude_seaTohome;}
     public double getAltitude(){return Altitude;}
     public double getLatitude() {

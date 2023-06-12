@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,7 +18,7 @@ public class BackgroundCallback extends Thread {
     TSPI mTSPI;
     FlightController flightController;
 
-   private Date timestamp;
+   private String timestamp;
    private String gpsSignalStrength;
    private double Altitude_seaTohome;
    private double Altitude;
@@ -54,7 +55,11 @@ public class BackgroundCallback extends Thread {
                     //getAircraftLocation 객체
                     LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
 
-                    timestamp = Calendar.getInstance().getTime();
+                    long time = System.currentTimeMillis();
+                    SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
+                    String s = simpl.format(time);
+
+                    timestamp = s;
                     gpsSignalStrength = String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel());
 
                     Altitude_seaTohome = djiFlightControllerCurrentState.getTakeoffLocationAltitude();
