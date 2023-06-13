@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String InputDataState;
 
     //interval time
-    private int taskInterval = 200; // taskInterval/1000 s
+    private int taskInterval = 1000; // taskInterval/1000 s
     private Timer sendDataTimer;
 
     //Database
@@ -375,6 +375,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public float getDistance_defenToTrajectory() {
             return this.distance_defenToTrajectory;
         }
+        public float getDistance_defenTomal(){return this.distance_defenTomal;}
 
         public double getAltitudeDifference() {
             return this.AltitudeDifference;
@@ -404,9 +405,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            String s = simpl.format(time);
 //            Log.d("TaskLog", s);
 
-            if(updateCount == 4){
+//            db.collection("0613_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
+//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            if (task.isSuccessful()) {
+//
+//                                int i = 0;
+//                                for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                    //showToast(String.valueOf(document.getData()));
+//
+//                                    String Time = String.valueOf(document.getData().get("Time"));
+//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+//                                    double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
+//                                    double Altitude = (double) document.getData().get("Altitude");
+//                                    double Latitude = (double) document.getData().get("Latitude");
+//                                    double Longitude = (double) document.getData().get("Longitude");
+//
+//                                    Log.d("Firebase", "Time : " + Time);
+////                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+////                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//
+//                                    maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+//
+//                                    i++;
+//                                    if (i == 1) {
+//                                        break;
+//                                    }
+//                                }
+//                            } else {
+//                                Log.w("Error", "Error getting documents.", task.getException());
+//                            }
+//                        }
+//                    });
+
+            if(updateCount < 5){
+                updateCount++;
+                Log.d("updateCount",String.valueOf(updateCount));
+            }else {
                 // Connection DB code
-                db.collection("0612_test_1600").orderBy("Time", Query.Direction.DESCENDING).get()
+                db.collection("0613_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -443,9 +484,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                         });
                 updateCount = 0;
-
-            }else if (updateCount < 4){
-                updateCount++;
             }
 
             //UI 변경
@@ -478,10 +516,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             "\nRoll : " + String.valueOf(defensiveTSPI.getRoll());
                     mTextDefensiveTSPI.setText(defensiveTSPIState);
 
-                    maliciousTSPIState = "Remaing distance of the Defensive : " + String.valueOf(getMaliciousDrone_flyDistance()) +
+                    maliciousTSPIState = "Radius from the DeDrone : " + String.valueOf(getDistance_defenTomal()) +
                             "\nAltitude_seatohome : " + String.valueOf(defensiveTSPI.getAltitude_seaTohome()) +
                             "\nAltitude : " + String.valueOf(defensiveTSPI.getAltitude()) +
-                            "\nRemaing Altitude of the Defensive : " + String.valueOf(getAltitudeDifference()) +
+                            "\nAltitude from the DeDrone : " + String.valueOf(getAltitudeDifference()) +
                             "\nDatabase Time : " + malTSPI.getTimestamp();
 
                     mTextMaliciousTSPI.setText(maliciousTSPIState);
@@ -574,17 +612,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                }
 
                 //상대 드론 위치에 따라 속도 변화
-                //default 3
+                //반경 1000m 이내 3
                 //반경 3m 이내 1
-                //반경 1m 이내 0
-                if (Math.abs(distance_defenTomal) <= 1){
+                //반경 2m 이내 0
+                if (distance_defenTomal <= 1 && distance_defenTomal > 0.005){
                     setPitch(3);
                     setMissionCompleted(false);
                 }
-                else if (Math.abs(distance_defenTomal) <= 0.0015) {
+                else if (distance_defenTomal <= 0.005 && distance_defenTomal > 0.003) {
                     setPitch(1);
                     setMissionCompleted(false);
-                }else if (Math.abs(distance_defenTomal) <= 0.0005){
+                }else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0){
                     setPitch(0);
                     setMissionCompleted(true);
                 }

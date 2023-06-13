@@ -1,34 +1,33 @@
 {
   "project_info": {
-    "project_number": "388224243781",
-    "firebase_url": "https://venture-new-default-rtdb.firebaseio.com",
-    "project_id": "venture-new",
-    "storage_bucket": "venture-new.appspot.com"
+    "project_number": "291750504970",
+    "project_id": "planb-7d43f",
+    "storage_bucket": "planb-7d43f.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:388224243781:android:d67aa9a53759f17a282b2c",
+        "mobilesdk_app_id": "1:291750504970:android:3977232663b06390680df3",
         "android_client_info": {
           "package_name": "com.dji.sdk.maldronesim"
         }
       },
       "oauth_client": [
         {
-          "client_id": "388224243781-ku5gunf2m1uu72ut9b378pbf310rqu18.apps.googleusercontent.com",
+          "client_id": "291750504970-iuln813c3q92mn222jvvtitefokms2tt.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBrXBTfGfhOJNPjw2pcJ4QORjvS5aOD13c"
+          "current_key": "AIzaSyCcIHdJvPsJtaGARaPYGCEET7JX1-9Nzwo"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "388224243781-ku5gunf2m1uu72ut9b378pbf310rqu18.apps.googleusercontent.com",
+              "client_id": "291750504970-iuln813c3q92mn222jvvtitefokms2tt.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -37,27 +36,27 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:388224243781:android:4b84d04198c5238c282b2c",
+        "mobilesdk_app_id": "1:291750504970:android:bde9e6f00a780099680df3",
         "android_client_info": {
           "package_name": "com.dji.sdk.venture"
         }
       },
       "oauth_client": [
         {
-          "client_id": "388224243781-ku5gunf2m1uu72ut9b378pbf310rqu18.apps.googleusercontent.com",
+          "client_id": "291750504970-iuln813c3q92mn222jvvtitefokms2tt.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBrXBTfGfhOJNPjw2pcJ4QORjvS5aOD13c"
+          "current_key": "AIzaSyCcIHdJvPsJtaGARaPYGCEET7JX1-9Nzwo"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "388224243781-ku5gunf2m1uu72ut9b378pbf310rqu18.apps.googleusercontent.com",
+              "client_id": "291750504970-iuln813c3q92mn222jvvtitefokms2tt.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
