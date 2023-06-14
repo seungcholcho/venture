@@ -101,6 +101,7 @@ public class TSPI {
     public void setDatabaseTime(String databaseTime){this.databaseTime = databaseTime;}
 
     public String getTimestamp(){return timestamp;}
+    public String getGpsSignalStrength(){return gpsSignalStrength;}
     public double getAltitude_seaTohome(){return Altitude_seaTohome;}
     public double getAltitude(){return Altitude;}
     public double getLatitude() {

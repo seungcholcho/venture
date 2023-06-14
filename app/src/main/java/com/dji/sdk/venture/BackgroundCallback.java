@@ -54,7 +54,7 @@ public class BackgroundCallback extends Thread {
                     LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
 
                     long time = System.currentTimeMillis();
-                    SimpleDateFormat simpl = new SimpleDateFormat("yyyyMMddaahhmmss");
+                    SimpleDateFormat simpl = new SimpleDateFormat("yyMMddhhmmss");
                     String currentTimeString = simpl.format(time);
 
                     currentTime = currentTimeString;
