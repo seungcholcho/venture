@@ -12,7 +12,7 @@ import dji.common.flightcontroller.FlightMode;
 public class TSPI {
     CircularQueue latQueue;
     CircularQueue lonQueue;
-    private int queSize = 2;
+    private int queSize = 5;
     private int taskInterval;
     private String timestamp;
     private String gpsSignalStrength;

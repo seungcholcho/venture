@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             String currentTime = simpl.format(time);
             Log.d("TaskLog", currentTime);
 
-            db.collection("0614_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
+            db.collection("0614_test2_1600_A").orderBy("Time", Query.Direction.DESCENDING).get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -586,12 +586,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
 
                 // time초 뒤의 위치 예측
-                //targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
-                //targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
+                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
 
                 //malicious drone의 위치로 이동할때
-                targetLatitude = malTSPI.getLatitude();
-                targetLongitude = malTSPI.getLongitude();
+//                targetLatitude = malTSPI.getLatitude();
+//                targetLongitude = malTSPI.getLongitude();
 
                 targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
 
@@ -610,8 +610,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //반경 1000m 이내 3
                 //반경 5~3m 이내 1
                 //반경 3m 이내 0
+//                if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
+//                    setPitch(3);
+//                    setMissionCompleted(false);
+//                    defTSPI.setMission(false);
+//                }
+//                else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0.001) {
+//                    setPitch(1);
+//                    setMissionCompleted(false);
+//                    defTSPI.setMission(false);
+//                }else if (distance_defenTomal <= 0.0005 && distance_defenTomal > 0){
+//                    setPitch(0);
+//                    setMissionCompleted(true);
+//                    defTSPI.setMission(true);
+//                }
+
                 if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
-                    setPitch(3);
+                    setPitch(5);
                     setMissionCompleted(false);
                     defTSPI.setMission(false);
                 }
@@ -624,6 +639,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     setMissionCompleted(true);
                     defTSPI.setMission(true);
                 }
+
+
+
 
             } else {
                 Log.d("PosPred", "queue empty!");
