@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String InputDataState;
 
     //interval time
-    private int taskInterval = 1000; // taskInterval/1000 s
+    private int taskInterval = 200; // taskInterval/1000 s
     private Timer sendDataTimer;
 
     //Database
@@ -400,91 +400,91 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void run() {
-//            long time = System.currentTimeMillis();
-//            SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
-//            String s = simpl.format(time);
-//            Log.d("TaskLog", s);
+            long time = System.currentTimeMillis();
+            SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
+            String currentTime = simpl.format(time);
+            Log.d("TaskLog", currentTime);
 
-//            db.collection("0613_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
-//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            if (task.isSuccessful()) {
-//
-//                                int i = 0;
-//                                for (QueryDocumentSnapshot document : task.getResult()) {
-//
-//                                    //showToast(String.valueOf(document.getData()));
-//
-//                                    String Time = String.valueOf(document.getData().get("Time"));
-//                                    String GpsSignal = (String) document.getData().get("GpsSignal");
-//                                    double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
-//                                    double Altitude = (double) document.getData().get("Altitude");
-//                                    double Latitude = (double) document.getData().get("Latitude");
-//                                    double Longitude = (double) document.getData().get("Longitude");
-//
-//                                    Log.d("Firebase", "Time : " + Time);
-////                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
-////                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
-////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
-//
-//                                    maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
-//
-//                                    i++;
-//                                    if (i == 1) {
-//                                        break;
-//                                    }
-//                                }
-//                            } else {
-//                                Log.w("Error", "Error getting documents.", task.getException());
-//                            }
-//                        }
-//                    });
+            db.collection("0613_test_1600").orderBy("Time", Query.Direction.DESCENDING).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
 
-            if(updateCount < 5){
-                updateCount++;
-                Log.d("updateCount",String.valueOf(updateCount));
-            }else {
-                // Connection DB code
-                db.collection("0613_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                if (task.isSuccessful()) {
+                                int i = 0;
+                                for (QueryDocumentSnapshot document : task.getResult()) {
 
-                                    int i = 0;
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                    //showToast(String.valueOf(document.getData()));
 
-                                        //showToast(String.valueOf(document.getData()));
+                                    String Time = String.valueOf(document.getData().get("Time"));
+                                    String GpsSignal = (String) document.getData().get("GpsSignal");
+                                    double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
+                                    double Altitude = (double) document.getData().get("Altitude");
+                                    double Latitude = (double) document.getData().get("Latitude");
+                                    double Longitude = (double) document.getData().get("Longitude");
 
-                                        String Time = String.valueOf(document.getData().get("Time"));
-                                        String GpsSignal = (String) document.getData().get("GpsSignal");
-                                        double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
-                                        double Altitude = (double) document.getData().get("Altitude");
-                                        double Latitude = (double) document.getData().get("Latitude");
-                                        double Longitude = (double) document.getData().get("Longitude");
-
-                                        Log.d("Firebase", "Time : " + Time);
+                                    Log.d("Firebase", "Time : " + Time);
 //                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
 //                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
 //                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
 //                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
 
-                                        maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+                                    maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
 
-                                        i++;
-                                        if (i == 1) {
-                                            break;
-                                        }
+                                    i++;
+                                    if (i == 1) {
+                                        break;
                                     }
-                                } else {
-                                    Log.w("Error", "Error getting documents.", task.getException());
                                 }
+                            } else {
+                                Log.w("Error", "Error getting documents.", task.getException());
                             }
-                        });
-                updateCount = 0;
-            }
+                        }
+                    });
+
+//            if(updateCount < 4){
+//                updateCount++;
+//                //Log.d("updateCount",String.valueOf(updateCount));
+//            }else {
+//                // Connection DB code
+//                db.collection("0613_test_1400").orderBy("Time", Query.Direction.DESCENDING).get()
+//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                                if (task.isSuccessful()) {
+//
+//                                    int i = 0;
+//                                    for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                        //showToast(String.valueOf(document.getData()));
+//
+//                                        String Time = String.valueOf(document.getData().get("Time"));
+//                                        String GpsSignal = (String) document.getData().get("GpsSignal");
+//                                        double Altitude_seaTohome = (double) document.getData().get("Altitude_seaTohome");
+//                                        double Altitude = (double) document.getData().get("Altitude");
+//                                        double Latitude = (double) document.getData().get("Latitude");
+//                                        double Longitude = (double) document.getData().get("Longitude");
+//
+//                                        Log.d("Firebase", "Time : " + Time);
+////                                        Log.d("Firebase", "GpsSignal : " + String.valueOf(document.getData().get("GpsSignal")));
+////                                        Log.d("Firebase", "Altitude : " + String.valueOf(document.getData().get("Altitude")));
+////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+////                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
+//
+//                                        maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+//
+//                                        i++;
+//                                        if (i == 1) {
+//                                            break;
+//                                        }
+//                                    }
+//                                } else {
+//                                    Log.w("Error", "Error getting documents.", task.getException());
+//                                }
+//                            }
+//                        });
+//                updateCount = 0;
+//            }
 
             //UI 변경
             runOnUiThread(new Runnable() {
@@ -517,9 +517,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mTextDefensiveTSPI.setText(defensiveTSPIState);
 
                     maliciousTSPIState = "Radius from the DeDrone : " + String.valueOf(getDistance_defenTomal()) +
-                            "\nAltitude_seatohome : " + String.valueOf(defensiveTSPI.getAltitude_seaTohome()) +
-                            "\nAltitude : " + String.valueOf(defensiveTSPI.getAltitude()) +
                             "\nAltitude from the DeDrone : " + String.valueOf(getAltitudeDifference()) +
+                            "\nCurrent Time : " + currentTime+
                             "\nDatabase Time : " + malTSPI.getTimestamp();
 
                     mTextMaliciousTSPI.setText(maliciousTSPIState);
@@ -561,75 +560,75 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             float time = 2.0F;
 
             //Change throttle
-//            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
-//            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-//            AltitudeDifference = maliciousAltitude - defensiveAltitude;
-//
-//            if (AltitudeDifference < 0) {
-//                setThrottle(2);
-//            } else if (AltitudeDifference <= 0 && AltitudeDifference >= -3) {
-//                setThrottle(0);
-//            } else if (AltitudeDifference < -3) {
-//                setThrottle(-1);
-//            }
+            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
+            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
+            AltitudeDifference = maliciousAltitude - defensiveAltitude;
+
+            if (AltitudeDifference > 0) {
+                setThrottle(2);
+            } else if (AltitudeDifference <= 0 && AltitudeDifference > -3) {
+                setThrottle(0);
+            } else if (AltitudeDifference <= -3) {
+                setThrottle(-1);
+            }
 
 
             //Change Yaw
-            if (malTSPI.latQueue.empty() != true) {
-                //베어링 계산
-                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
-                //비행 거리 계산
-                maliciousDrone_flyDistance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
-                //속도 계산
-                predictedVelocity = maliciousDrone_flyDistance / predictionPeriod; // km/s
-                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
-
-                // time초 뒤의 위치 예측
-                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
-                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
-
-                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
-
-                Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
-                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " + String.valueOf(targetYaw));
-
-                setYaw(targetYaw);
-                //setPitch(1);
-
-                //Calculation of the difference between the Defensive location and trajectory location
-                distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
-                distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
-
-                //Change pitch
-                //상대 드론와 3미터 차이 나면 속도0
-//                if (Math.abs(distance_defenToTrajectory) > 0.003) {
-//                    setPitch(1);
-//                }//상대 드론과
-//                else if (Math.abs(distance_defenToTrajectory) <= 0.003 && Math.abs(distance_defenToTrajectory) >= 0.002) {
-//                    setPitch(1);
-//                } else if (Math.abs(distance_defenToTrajectory) < 0.002 && Math.abs(distance_defenToTrajectory) >= 0.000) {
-//                    setPitch(-1);
+//            if (malTSPI.latQueue.empty() != true) {
+//                //베어링 계산
+//                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
+//                //비행 거리 계산
+//                maliciousDrone_flyDistance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
+//                //속도 계산
+//                predictedVelocity = maliciousDrone_flyDistance / predictionPeriod; // km/s
+//                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
+//
+//                // time초 뒤의 위치 예측
+//                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+//                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
+//
+//                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
+//
+//                Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
+//                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " + String.valueOf(targetYaw));
+//
+//                setYaw(targetYaw);
+//                setPitch(1);
+//
+//                //Calculation of the difference between the Defensive location and trajectory location
+//                distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
+//                distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
+//
+//                //Change pitch
+//                //상대 드론와 3미터 차이 나면 속도0
+////                if (Math.abs(distance_defenToTrajectory) > 0.003) {
+////                    setPitch(1);
+////                }//상대 드론과
+////                else if (Math.abs(distance_defenToTrajectory) <= 0.003 && Math.abs(distance_defenToTrajectory) >= 0.002) {
+////                    setPitch(1);
+////                } else if (Math.abs(distance_defenToTrajectory) < 0.002 && Math.abs(distance_defenToTrajectory) >= 0.000) {
+////                    setPitch(-1);
+////                }
+//
+//                //상대 드론 위치에 따라 속도 변화
+//                //반경 1000m 이내 3
+//                //반경 5~3m 이내 1
+//                //반경 3m 이내 0
+//                if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
+//                    setPitch(3);
+//                    setMissionCompleted(false);
 //                }
-
-                //상대 드론 위치에 따라 속도 변화
-                //반경 1000m 이내 3
-                //반경 3m 이내 1
-                //반경 2m 이내 0
-                if (distance_defenTomal <= 1 && distance_defenTomal > 0.005){
-                    setPitch(3);
-                    setMissionCompleted(false);
-                }
-                else if (distance_defenTomal <= 0.005 && distance_defenTomal > 0.003) {
-                    setPitch(1);
-                    setMissionCompleted(false);
-                }else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0){
-                    setPitch(0);
-                    setMissionCompleted(true);
-                }
-
-            } else {
-                Log.d("PosPred", "queue empty!");
-            }
+//                else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0.001) {
+//                    setPitch(1);
+//                    setMissionCompleted(false);
+//                }else if (distance_defenTomal <= 0.0005 && distance_defenTomal > 0){
+//                    setPitch(0);
+//                    setMissionCompleted(true);
+//                }
+//
+//            } else {
+//                Log.d("PosPred", "queue empty!");
+//            }
         }
 
         public void send() {
