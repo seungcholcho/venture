@@ -604,7 +604,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Calculation of the difference between the Defensive location and trajectory location
                 distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
                 distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
-
+//
                 //Change pitch
                 //상대 드론 위치에 따라 속도 변화
                 //반경 1000m 이내 3
