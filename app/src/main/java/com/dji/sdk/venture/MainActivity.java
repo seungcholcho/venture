@@ -400,11 +400,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             long time = System.currentTimeMillis();
-            SimpleDateFormat simpl = new SimpleDateFormat("yyyyMMddaahhmmss");
+            SimpleDateFormat simpl = new SimpleDateFormat("yyMMddHHmmss");
             String currentTime = simpl.format(time);
             Log.d("TaskLog", currentTime);
 
-            db.collection("0613_test_1600").orderBy("Time", Query.Direction.DESCENDING).get()
+            db.collection("0614_test_1").orderBy("Time", Query.Direction.DESCENDING).get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -561,17 +561,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             float time = 2.0F;
 
             //Change throttle
-            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
-            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
-            AltitudeDifference = maliciousAltitude - defensiveAltitude;
-
-            if (AltitudeDifference > 0) {
-                setThrottle(2);
-            } else if (AltitudeDifference <= 0 && AltitudeDifference > -3) {
-                setThrottle(0);
-            } else if (AltitudeDifference <= -3) {
-                setThrottle(-1);
-            }
+//            defensiveAltitude = defTSPI.getAltitude_seaTohome() + defTSPI.getAltitude();
+//            maliciousAltitude = malTSPI.getAltitude_seaTohome() + malTSPI.getAltitude();
+//            AltitudeDifference = maliciousAltitude - defensiveAltitude;
+//
+//            if (AltitudeDifference > 0) {
+//                setThrottle(2);
+//            } else if (AltitudeDifference <= 0 && AltitudeDifference > -3) {
+//                setThrottle(0);
+//            } else if (AltitudeDifference <= -3) {
+//                setThrottle(-1);
+//            }
 
 
             //Change Yaw
