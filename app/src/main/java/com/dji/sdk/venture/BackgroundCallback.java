@@ -5,8 +5,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
@@ -18,7 +16,7 @@ public class BackgroundCallback extends Thread {
     TSPI mTSPI;
     FlightController flightController;
 
-   private String timestamp;
+   private String currentTime;
    private String gpsSignalStrength;
    private double Altitude_seaTohome;
    private double Altitude;
@@ -56,10 +54,10 @@ public class BackgroundCallback extends Thread {
                     LocationCoordinate3D locationCoordinate3D = djiFlightControllerCurrentState.getAircraftLocation();
 
                     long time = System.currentTimeMillis();
-                    SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
-                    String s = simpl.format(time);
+                    SimpleDateFormat simpl = new SimpleDateFormat("yyyyMMddaahhmmss");
+                    String currentTimeString = simpl.format(time);
 
-                    timestamp = s;
+                    currentTime = currentTimeString;
                     gpsSignalStrength = String.valueOf(djiFlightControllerCurrentState.getGPSSignalLevel());
 
                     Altitude_seaTohome = djiFlightControllerCurrentState.getTakeoffLocationAltitude();
@@ -80,7 +78,7 @@ public class BackgroundCallback extends Thread {
                     yaw = attitude.yaw;
                     roll = attitude.roll;
 
-                    mTSPI.updateTSPIdji(timestamp,gpsSignalStrength,Altitude_seaTohome,Altitude,Latitude,Longitude,pitch,yaw,roll,vX,vY,vZ,xXYZ,flightState);
+                    mTSPI.updateTSPIdji(currentTime,gpsSignalStrength,Altitude_seaTohome,Altitude,Latitude,Longitude,pitch,yaw,roll,vX,vY,vZ,xXYZ,flightState);
                 }
             });
         }

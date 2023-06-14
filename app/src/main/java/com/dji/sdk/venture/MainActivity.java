@@ -297,7 +297,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         private boolean enableVirtualStick;
         private boolean missionCompleted;
 
-
         TSPI defTSPI;
         TSPI malTSPI;
         FlightController mflightController;
@@ -401,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             long time = System.currentTimeMillis();
-            SimpleDateFormat simpl = new SimpleDateFormat("yyyy년 MM월 dd일 aa hh시 mm분 ss초");
+            SimpleDateFormat simpl = new SimpleDateFormat("yyyyMMddaahhmmss");
             String currentTime = simpl.format(time);
             Log.d("TaskLog", currentTime);
 
