@@ -25,7 +25,6 @@ public class TSPI {
     private double targetLat;
     private double targetLon;
 
-
     private double pitch;
     private double yaw;
     private double roll;
@@ -34,6 +33,9 @@ public class TSPI {
     private double vY;
     private double vZ;
     private double xXYZ;
+
+    private boolean mission;
+    private String databaseTime;
 
     protected FlightMode flightState = null;
 
@@ -45,9 +47,13 @@ public class TSPI {
         this.latQueue = new CircularQueue(queSize);
         this.lonQueue = new CircularQueue(queSize);
 
+        this.mission = false;
+        this.databaseTime = "NaN";
+
         //Write Log
         this.loggedTSPI = new StringBuffer();
-        this.header = "Date,curLat,curLon,targetLat,targetLon,queSize,taskInterval\n";
+
+        this.header = "CurrentTime,DatabaseTime,curLat,curLon,targetLat,targetLon,mission,queSize,taskInterval\n";
         this.loggedTSPI.append(header);
     }
 
@@ -91,6 +97,8 @@ public class TSPI {
     public void setTaskInterval(int taskInterval){
         this.taskInterval = taskInterval;
     }
+    public void setMission(boolean mission){this.mission = mission;}
+    public void setDatabaseTime(String databaseTime){this.databaseTime = databaseTime;}
 
     public String getTimestamp(){return timestamp;}
     public double getAltitude_seaTohome(){return Altitude_seaTohome;}
@@ -130,6 +138,8 @@ public class TSPI {
     public FlightMode getFlightState() {
         return flightState;
     }
+    public boolean getMission(){return this.mission;}
+    public String getDatabaseTime(){return this.databaseTime;}
 
     public void appendLatLonToQueue(double lat, double lon){
         latQueue.insert(lat);
@@ -139,19 +149,23 @@ public class TSPI {
     public String logResults(){
         if(loggedTSPI.length() == header.length()){
             loggedTSPI.append(timestamp).append(",");
+            loggedTSPI.append(databaseTime).append(",");
             loggedTSPI.append(Latitude).append(",");
             loggedTSPI.append(Longitude).append(",");
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
+            loggedTSPI.append(mission).append(",") ;
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         } else {
             loggedTSPI.delete(0, loggedTSPI.length());
             loggedTSPI.append(timestamp).append(",");
+            loggedTSPI.append(databaseTime).append(",");
             loggedTSPI.append(Latitude).append(",");
             loggedTSPI.append(Longitude).append(",");
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
+            loggedTSPI.append(mission).append(",") ;
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         }

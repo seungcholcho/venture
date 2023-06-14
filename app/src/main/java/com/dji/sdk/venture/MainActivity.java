@@ -430,6 +430,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                                        Log.d("Firebase", "Latitude : " + String.valueOf(document.getData().get("Latitude")));
 
                                     maliciousTSPI.updateTSPIserver(Time, GpsSignal, Altitude_seaTohome, Altitude, Latitude, Longitude);
+                                    defTSPI.setDatabaseTime(Time);
 
                                     i++;
                                     if (i == 1) {
@@ -542,7 +543,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 calculateTSPI();
                 defTSPI.setTargetLat(targetLatitude);
                 defTSPI.setTargetLon(targetLongitude);
+
                 malTSPI.appendLatLonToQueue(malTSPI.getLatitude(), malTSPI.getLongitude());
+
                 Log.d("TaskCalculate", String.valueOf(getPitch()));
 
                 send();
@@ -550,7 +553,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //Write Log
                 defTSPI.writeLogfile(mContext, fileName, defTSPI.logResults());
-
             }
         }
 
@@ -574,61 +576,59 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             //Change Yaw
-//            if (malTSPI.latQueue.empty() != true) {
-//                //베어링 계산
-//                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
-//                //비행 거리 계산
-//                maliciousDrone_flyDistance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
-//                //속도 계산
-//                predictedVelocity = maliciousDrone_flyDistance / predictionPeriod; // km/s
-//                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
-//
-//                // time초 뒤의 위치 예측
-//                targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
-//                targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
-//
-//                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
-//
+            if (malTSPI.latQueue.empty() != true) {
+                //베어링 계산
+                bearing = (float) GPSUtil.calculateBearing(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear());
+
+                //비행 거리 계산
+                maliciousDrone_flyDistance = (float) GPSUtil.haversine(malTSPI.latQueue.getFront(), malTSPI.lonQueue.getFront(), malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear()); // is in Km
+                //속도 계산
+                predictedVelocity = maliciousDrone_flyDistance / predictionPeriod; // km/s
+                Log.d("PosPredBDV", "bearing: " + String.valueOf(bearing) + "distance: " + String.valueOf(maliciousDrone_flyDistance) + "Velocity " + String.valueOf(predictedVelocity));
+
+                // time초 뒤의 위치 예측
+                //targetLatitude = GPSUtil.calculateDestinationLatitude(malTSPI.latQueue.getRear(), predictedVelocity * time, bearing);  // time 초 뒤의 위도 예측
+                //targetLongitude = GPSUtil.calculateDestinationLongitude(malTSPI.latQueue.getRear(), malTSPI.lonQueue.getRear(), predictedVelocity * time, bearing); //time 초 뒤의 경도 예측
+
+                //malicious drone의 위치로 이동할때
+                targetLatitude = malTSPI.getLatitude();
+                targetLongitude = malTSPI.getLongitude();
+
+                targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
+
+
 //                Log.d("PosPred", "myPos: lat: " + String.valueOf(defTSPI.getLatitude()) + " lon: " + String.valueOf(defTSPI.getLongitude()));
 //                Log.d("PosPred", "tarPos: lat: " + String.valueOf(targetLatitude) + " lon: " + String.valueOf(targetLongitude) + " yaw: " + String.valueOf(targetYaw));
-//
-//                setYaw(targetYaw);
-//                setPitch(1);
-//
-//                //Calculation of the difference between the Defensive location and trajectory location
-//                distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
-//                distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
-//
-//                //Change pitch
-//                //상대 드론와 3미터 차이 나면 속도0
-////                if (Math.abs(distance_defenToTrajectory) > 0.003) {
-////                    setPitch(1);
-////                }//상대 드론과
-////                else if (Math.abs(distance_defenToTrajectory) <= 0.003 && Math.abs(distance_defenToTrajectory) >= 0.002) {
-////                    setPitch(1);
-////                } else if (Math.abs(distance_defenToTrajectory) < 0.002 && Math.abs(distance_defenToTrajectory) >= 0.000) {
-////                    setPitch(-1);
-////                }
-//
-//                //상대 드론 위치에 따라 속도 변화
-//                //반경 1000m 이내 3
-//                //반경 5~3m 이내 1
-//                //반경 3m 이내 0
-//                if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
-//                    setPitch(3);
-//                    setMissionCompleted(false);
-//                }
-//                else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0.001) {
-//                    setPitch(1);
-//                    setMissionCompleted(false);
-//                }else if (distance_defenTomal <= 0.0005 && distance_defenTomal > 0){
-//                    setPitch(0);
-//                    setMissionCompleted(true);
-//                }
-//
-//            } else {
-//                Log.d("PosPred", "queue empty!");
-//            }
+
+                setYaw(targetYaw);
+
+                //Calculation of the difference between the Defensive location and trajectory location
+                distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
+                distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
+
+                //Change pitch
+                //상대 드론 위치에 따라 속도 변화
+                //반경 1000m 이내 3
+                //반경 5~3m 이내 1
+                //반경 3m 이내 0
+                if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
+                    setPitch(3);
+                    setMissionCompleted(false);
+                    defTSPI.setMission(false);
+                }
+                else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0.001) {
+                    setPitch(1);
+                    setMissionCompleted(false);
+                    defTSPI.setMission(false);
+                }else if (distance_defenTomal <= 0.0005 && distance_defenTomal > 0){
+                    setPitch(0);
+                    setMissionCompleted(true);
+                    defTSPI.setMission(true);
+                }
+
+            } else {
+                Log.d("PosPred", "queue empty!");
+            }
         }
 
         public void send() {
