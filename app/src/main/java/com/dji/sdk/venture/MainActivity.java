@@ -406,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             long time = System.currentTimeMillis();
-            SimpleDateFormat simpl = new SimpleDateFormat("yyyyMMddhhmmss");
+            SimpleDateFormat simpl = new SimpleDateFormat("yyMMddHHmmss");
             String currentTime = simpl.format(time);
             Log.d("TaskLog", currentTime);
 
