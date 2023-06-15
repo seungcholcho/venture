@@ -411,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("updateCount",String.valueOf(updateCount));
             } else {
                 // Connection DB code
-                db.collection("0614_test2_2000").orderBy("Time", Query.Direction.DESCENDING).get()
+                db.collection("0614_test_2000_1").orderBy("Time", Query.Direction.DESCENDING).get()
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
