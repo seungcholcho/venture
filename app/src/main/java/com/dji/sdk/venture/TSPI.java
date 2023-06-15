@@ -24,6 +24,7 @@ public class TSPI {
     //trajectory
     private double targetLat;
     private double targetLon;
+    private float distance_defenTomal;
 
     private double pitch;
     private double yaw;
@@ -99,6 +100,9 @@ public class TSPI {
     }
     public void setMission(boolean mission){this.mission = mission;}
     public void setDatabaseTime(String databaseTime){this.databaseTime = databaseTime;}
+    public void setDistance_defenTomal(float distance){
+        this.distance_defenTomal = distance;
+    }
 
     public String getTimestamp(){return timestamp;}
     public double getAltitude_seaTohome(){return Altitude_seaTohome;}
@@ -121,6 +125,7 @@ public class TSPI {
     public double getRoll() {
         return roll;
     }
+    public float getDistance_defenTomal(){return distance_defenTomal;}
 
     public double getvX(){return vX;}
     public double getvY(){return vY;}
@@ -155,6 +160,7 @@ public class TSPI {
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
             loggedTSPI.append(mission).append(",") ;
+            loggedTSPI.append(distance_defenTomal).append(",");
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         } else {
@@ -166,6 +172,7 @@ public class TSPI {
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
             loggedTSPI.append(mission).append(",") ;
+            loggedTSPI.append(distance_defenTomal).append(",");
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         }
