@@ -353,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             this.enableVirtualStick = enableVirtualStick;
         }
 
-        public void setMissionCompleted(boolean missionCompleted){
+        public void setMissionCompleted(boolean missionCompleted) {
             this.missionCompleted = missionCompleted;
         }
 
@@ -380,7 +380,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public float getDistance_defenToTrajectory() {
             return this.distance_defenToTrajectory;
         }
-        public float getDistance_defenTomal(){return this.distance_defenTomal;}
+
+        public float getDistance_defenTomal() {
+            return this.distance_defenTomal;
+        }
 
         public double getAltitudeDifference() {
             return this.AltitudeDifference;
@@ -399,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return this.enableVirtualStick;
         }
 
-        public boolean getMissionCompeleted(){
+        public boolean getMissionCompeleted() {
             return this.missionCompleted;
         }
 
@@ -411,9 +414,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("TaskLog", currentTime);
 
             HashMap result = new HashMap<>();
-            result.put("Time",  defTSPI.getTimestamp());
+            result.put("Time", defTSPI.getTimestamp());
             result.put("GpsSignal", String.valueOf(defTSPI.getGpsSignalStrength()));
-            result.put("Altitude_seaTohome",defTSPI.getAltitude_seaTohome());
+            result.put("Altitude_seaTohome", defTSPI.getAltitude_seaTohome());
             result.put("Altitude", defTSPI.getAltitude());
             result.put("Latitude", defTSPI.getLatitude());
             result.put("Longitude", defTSPI.getLongitude());
@@ -421,8 +424,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             result.put("Yaw", defTSPI.getYaw());
 
 
-            if (!(isNaN((double)result.get("Latitude"))) && !(isNaN((double)result.get("Longitude")))){
-                db.collection("0614_test2_1600_A").add(result).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            if (!(isNaN((double) result.get("Latitude"))) && !(isNaN((double) result.get("Longitude")))) {
+                db.collection("0614_test_2000").add(result).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
@@ -433,8 +436,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Log.w(TAG, "Error adding document", e);
                     }
                 });
-            }
-            else{
+            } else {
                 System.out.println("Latitude and Logitude are NaN");
             }
 
@@ -508,19 +510,54 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void calculateTSPI() {
             Log.d("calculateTSPI", "Run");
 
-            targetLatitude = 40.22468163009505559558;
-            targetLongitude = -87.00319254972414739768;
+//          0
+//          40.224666726324536
+//          -87.00261614360413
+
+//          50
+//          40.22465038565578
+//          -87.00204037605528
+
+//          100
+//          40.22466779348572
+//          -87.00143618998054
+
+//          150
+//          40.22466769752144
+//          -87.00084608164784
+
+            targetLatitude = 40.224666726324536;
+            targetLongitude = -87.00261614360413;
 
             distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
 
             targetYaw = (float) GPSUtil.calculateBearing(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude);
             setYaw(targetYaw);
 
-            if (distance_defenToTrajectory <= 0.0005 && distance_defenToTrajectory > 0){
-                setPitch(0);
-            }else{
+            //Change pitch
+            //상대 드론 위치에 따라 속도 변화
+            //반경 10km 이내 5
+            //반경 1km 이내 3
+            //반경 500m 이내 1
+            //반경 3m 이내 0
+            if (distance_defenTomal <= 10 && distance_defenTomal > 1) {
                 setPitch(5);
+                setMissionCompleted(false);
+                defTSPI.setMission(false);
+            } else if (distance_defenTomal <= 1 && distance_defenTomal > 0.5) {
+                setPitch(3);
+                setMissionCompleted(false);
+                defTSPI.setMission(false);
+            } else if (distance_defenTomal <= 0.5 && distance_defenTomal > 0.003) {
+                setPitch(1);
+                setMissionCompleted(true);
+                defTSPI.setMission(true);
+            } else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0) {
+                setPitch(0);
+                setMissionCompleted(true);
+                defTSPI.setMission(true);
             }
+
 
 //            float time = 2.0F;
 
@@ -568,25 +605,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                distance_defenToTrajectory = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), targetLatitude, targetLongitude); // is in Km
 //                distance_defenTomal = (float) GPSUtil.haversine(defTSPI.getLatitude(), defTSPI.getLongitude(), malTSPI.getLatitude(), malTSPI.getLongitude()); // is in Km
 //
-//                //Change pitch
-//                //상대 드론 위치에 따라 속도 변화
-//                //반경 1000m 이내 3
-//                //반경 5~3m 이내 1
-//                //반경 3m 이내 0
-//                if (distance_defenTomal <= 1 && distance_defenTomal > 0.003){
-//                    setPitch(3);
-//                    setMissionCompleted(false);
-//                    defTSPI.setMission(false);
-//                }
-//                else if (distance_defenTomal <= 0.003 && distance_defenTomal > 0.001) {
-//                    setPitch(1);
-//                    setMissionCompleted(false);
-//                    defTSPI.setMission(false);
-//                }else if (distance_defenTomal <= 0.0005 && distance_defenTomal > 0){
-//                    setPitch(0);
-//                    setMissionCompleted(true);
-//                    defTSPI.setMission(true);
-//                }
 //
 //            } else {
 //                Log.d("PosPred", "queue empty!");
