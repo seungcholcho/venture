@@ -3,6 +3,8 @@ package com.dji.sdk.venture;
 import android.content.Context;
 import android.util.Log;
 
+import com.dji.sdk.venture.Utils.CircularQueueUtil;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -10,8 +12,8 @@ import dji.common.flightcontroller.FlightMode;
 
 public class TSPI {
 
-    CircularQueue latQueue;
-    CircularQueue lonQueue;
+    CircularQueueUtil latQueue;
+    CircularQueueUtil lonQueue;
 
     private int queSize = 5;
     private int taskInterval;
@@ -46,8 +48,8 @@ public class TSPI {
     private String header;
 
     public TSPI(){
-        this.latQueue = new CircularQueue(queSize);
-        this.lonQueue = new CircularQueue(queSize);
+        this.latQueue = new CircularQueueUtil(queSize);
+        this.lonQueue = new CircularQueueUtil(queSize);
 
         this.mission = false;
         this.databaseTime = "NaN";

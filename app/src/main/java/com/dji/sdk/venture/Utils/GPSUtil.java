@@ -1,9 +1,10 @@
-package com.dji.sdk.venture;
+package com.dji.sdk.venture.Utils;
 
+//This class calculates bearing and latitude longitude.
 public class GPSUtil {
     private static final double EARTH_RADIUS = 6371; // Earth's radius in kilometers
 
-    static double haversine(double lat1, double lon1,
+    public static double haversine(double lat1, double lon1,
                             double lat2, double lon2)
     {
         // distance between latitudes and longitudes

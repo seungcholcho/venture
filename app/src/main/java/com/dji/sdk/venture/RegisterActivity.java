@@ -228,13 +228,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void notifyStatusChange() {
-        //showToast("hello from notify status");
-        //mHandler.removeCallbacks(updateRunnable);
-        //mHandler.postDelayed(updateRunnable, 500);
     }
 
-
-    //Register 글자 변경
     private void refreshSDKRelativeUI() {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
