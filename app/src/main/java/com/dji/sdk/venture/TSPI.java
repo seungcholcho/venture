@@ -5,13 +5,14 @@ import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 
 import dji.common.flightcontroller.FlightMode;
 
 public class TSPI {
+
     CircularQueue latQueue;
     CircularQueue lonQueue;
+
     private int queSize = 5;
     private int taskInterval;
     private String timestamp;
@@ -54,7 +55,7 @@ public class TSPI {
         //Write Log
         this.loggedTSPI = new StringBuffer();
 
-        this.header = "CurrentTime,DatabaseTime,curLat,curLon,targetLat,targetLon,mission,queSize,taskInterval\n";
+        this.header = "CurrentTime,DatabaseTime,curLat,curLon,targetLat,targetLon,mission,distance_defenTomal,queSize,taskInterval\n";
         this.loggedTSPI.append(header);
     }
 
@@ -147,8 +148,9 @@ public class TSPI {
     public String getDatabaseTime(){return this.databaseTime;}
 
     public void appendLatLonToQueue(double lat, double lon){
-        latQueue.insert(lat);
-        lonQueue.insert(lon);
+        latQueue.offer(lat);
+        lonQueue.offer(lon);
+        Log.d("CirQueue","offer");
     }
 
     public String logResults(){
