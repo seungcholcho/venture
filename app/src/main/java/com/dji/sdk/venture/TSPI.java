@@ -5,14 +5,15 @@ import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 
 import dji.common.flightcontroller.FlightMode;
 
 public class TSPI {
+
     CircularQueue latQueue;
     CircularQueue lonQueue;
-    private int queSize = 2;
+
+    private int queSize = 5;
     private int taskInterval;
     private String timestamp;
     private String gpsSignalStrength;
@@ -24,6 +25,7 @@ public class TSPI {
     //trajectory
     private double targetLat;
     private double targetLon;
+    private float distance_defenTomal;
 
     private double pitch;
     private double yaw;
@@ -53,7 +55,7 @@ public class TSPI {
         //Write Log
         this.loggedTSPI = new StringBuffer();
 
-        this.header = "CurrentTime,DatabaseTime,curLat,curLon,targetLat,targetLon,mission,queSize,taskInterval\n";
+        this.header = "CurrentTime,DatabaseTime,curLat,curLon,targetLat,targetLon,mission,distance_defenTomal,queSize,taskInterval\n";
         this.loggedTSPI.append(header);
     }
 
@@ -99,6 +101,9 @@ public class TSPI {
     }
     public void setMission(boolean mission){this.mission = mission;}
     public void setDatabaseTime(String databaseTime){this.databaseTime = databaseTime;}
+    public void setDistance_defenTomal(float distance){
+        this.distance_defenTomal = distance;
+    }
 
     public String getTimestamp(){return timestamp;}
     public double getAltitude_seaTohome(){return Altitude_seaTohome;}
@@ -121,6 +126,7 @@ public class TSPI {
     public double getRoll() {
         return roll;
     }
+    public float getDistance_defenTomal(){return distance_defenTomal;}
 
     public double getvX(){return vX;}
     public double getvY(){return vY;}
@@ -142,8 +148,9 @@ public class TSPI {
     public String getDatabaseTime(){return this.databaseTime;}
 
     public void appendLatLonToQueue(double lat, double lon){
-        latQueue.insert(lat);
-        lonQueue.insert(lon);
+        latQueue.offer(lat);
+        lonQueue.offer(lon);
+        Log.d("CirQueue","offer");
     }
 
     public String logResults(){
@@ -155,6 +162,7 @@ public class TSPI {
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
             loggedTSPI.append(mission).append(",") ;
+            loggedTSPI.append(distance_defenTomal).append(",");
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         } else {
@@ -166,6 +174,7 @@ public class TSPI {
             loggedTSPI.append(targetLat).append(",");
             loggedTSPI.append(targetLon).append(",");
             loggedTSPI.append(mission).append(",") ;
+            loggedTSPI.append(distance_defenTomal).append(",");
             loggedTSPI.append(queSize).append(",");
             loggedTSPI.append(taskInterval).append("\n");
         }

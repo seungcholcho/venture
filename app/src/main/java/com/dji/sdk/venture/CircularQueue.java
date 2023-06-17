@@ -1,72 +1,71 @@
 package com.dji.sdk.venture;
 
-public class CircularQueue {
-
-    // 큐 배열은 front와 rear 그리고 maxSize를 가진다.
+public class CircularQueue<T> implements IQueue<T> {
+    private T[] elements;
     private int front;
     private int rear;
     private int maxSize;
-    private double[] queueArray;
 
-    // 큐 배열 생성
-    public CircularQueue(int maxSize){
-
-        this.front = 1;
+    public CircularQueue(int size) {
+        this.elements = (T[]) new Object[size + 1];
+        //더미 공간, isEmpty와 Full 상태를 구별하기 위함
+        this.front = 0;
         this.rear = 0;
-
-        // 실제 크기보다 하나 크게 지정한다 (공백과 포화를 막기 위함)
-        this.maxSize = maxSize+1;
-        this.queueArray = new double[this.maxSize];
+        this.maxSize = size + 1;
     }
 
-    // 큐가 비어있는지 확인
-    public boolean empty(){
-        return (front == rear+1) || (front+maxSize-1 == rear);
-    }
-
-    // 큐가 꽉 찼는지 확인
-    public boolean full(){
-        return (rear == maxSize-1) || (front+maxSize-2 == rear);
-    }
-
-    // 큐 rear에 데이터 등록
-    public void insert(double item){
-
-        if(full()){
-            this.remove();
+    @Override
+    public void offer(T data) {
+        if (this.isFull()) {
+            poll();
         }
 
-        // rear 가 배열의 마지막이면 rear 포인터를 앞으로 돌린다.
-        if(rear == maxSize-1){
-            rear = 0;
+        this.rear = (this.rear + 1) % this.maxSize;
+        this.elements[this.rear] = data;
+    }
+
+    @Override
+    public T poll() {
+        if (this.isEmpty()) {
+            throw new IllegalStateException();
         }
-        queueArray[++rear] = item;
+        this.front = (this.front + 1) % this.maxSize;
+        return this.elements[this.front];
+        // 어차피 데이터의 삽입과 인출은 front와 rear에 의해 일어나고,
+        // 배열을 선언한 시점에서 그 위치를 쓰고있으니, 데이터를 지워줄 필요가 없다.
     }
 
-    // 큐에서 front 데이터 조회
-    public double peek(){
-
-        if(empty()) throw new ArrayIndexOutOfBoundsException();
-
-        return queueArray[front];
-    }
-
-    // 큐에서 front 데이터 제거
-    public double remove(){
-        double item = peek();
-        front++;
-
-        // front의 다음 index가 배열크기+1 이면 처음으로 돌아간다
-        if(front==maxSize){
-            front = 1;
+    @Override
+    public T peek() { // 데이터를 빼지 않고 확인만
+        if (this.isEmpty()) {
+            throw new IllegalStateException();
         }
-        return item;
+        return this.elements[this.front + 1];
     }
 
-    public double getFront(){
-        return queueArray[front];
+    @Override
+    public int size() {
+        if (this.front <= this.rear) {
+            return this.rear - this.front;
+        }
+        return this.maxSize - this.front + this.rear;
     }
-    public double getRear(){
-        return queueArray[rear];
+
+    @Override
+    public void clear() {
+        this.front = 0; // 어차피 데이터 넣으면 초기화되니 이렇게 하면
+        this.rear = 0; // 초기화
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.front == this.rear;
+    }
+
+    private boolean isFull() {
+        return (this.rear + 1) % this.maxSize == this.front;
+        // rear 바로 뒤에 front가 있으면 큐가 꽉 찬 상태이다.
+        // 한바퀴 돌면 front와 rear위치가 다시 바뀐다. rear+1 이 큐 사이즈보다
+        // 커질 수 있기에, %연산으로 확실하게 확인한다.
     }
 }
